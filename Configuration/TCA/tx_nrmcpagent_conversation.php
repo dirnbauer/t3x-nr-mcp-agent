@@ -12,7 +12,9 @@ return [
         'readOnly' => true,
         'adminOnly' => true,
         'rootLevel' => 1,
-        'iconfile' => 'EXT:nr_mcp_agent/Resources/Public/Icons/Extension.svg',
+        'typeicon_classes' => [
+            'default' => 'record-nr-mcp-agent-conversation',
+        ],
         'searchFields' => 'title',
     ],
     'types' => [

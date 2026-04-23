@@ -16,7 +16,9 @@ return [
         'adminOnly' => true,
         'rootLevel' => 1,
         'type' => 'transport',
-        'iconfile' => 'EXT:nr_mcp_agent/Resources/Public/Icons/Extension.svg',
+        'typeicon_classes' => [
+            'default' => 'record-nr-mcp-agent-mcp-server',
+        ],
         'searchFields' => 'name,server_key',
     ],
     'types' => [

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <rect x="2" y="2" width="12" height="5.5" rx=".5" fill="currentColor"/>
+  <rect x="2" y="8.5" width="12" height="5.5" rx=".5" fill="currentColor"/>
+  <circle cx="4" cy="4.75" r=".6" fill="var(--icon-color-accent, #ff8700)"/>
+  <circle cx="4" cy="11.25" r=".6" fill="var(--icon-color-accent, #ff8700)"/>
+</svg>
