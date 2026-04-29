@@ -1025,7 +1025,14 @@ class ChatApiControllerTest extends TestCase
         $storage = $this->createMock(\TYPO3\CMS\Core\Resource\ResourceStorage::class);
         $storage->method('hasFolder')->willReturn(true);
         $storage->method('getFolder')->willReturn($folder);
-        $storage->method('addFile')->willReturn($falFile);
+        $storage->expects(self::once())
+            ->method('addFile')
+            ->with(
+                $tmpPath,
+                $folder,
+                self::callback(static fn(string $filename): bool => preg_match('/^report-[a-f0-9]{16}\.pdf$/', $filename) === 1),
+            )
+            ->willReturn($falFile);
 
         $this->storageRepository->method('getDefaultStorage')->willReturn($storage);
 
@@ -1067,6 +1074,52 @@ class ChatApiControllerTest extends TestCase
         self::assertSame('report.pdf', $data['name']);
         self::assertSame('application/pdf', $data['mimeType']);
         self::assertSame(1024, $data['size']);
+    }
+
+    #[Test]
+    public function fileUploadRejectsExtensionMimeMismatch(): void
+    {
+        $tmpPath = tempnam(sys_get_temp_dir(), 'nr_test_');
+        file_put_contents($tmpPath, '%PDF-1.4 fake content');
+
+        $stream = $this->createMock(\Psr\Http\Message\StreamInterface::class);
+        $stream->method('getMetadata')->with('uri')->willReturn($tmpPath);
+
+        $uploadedFile = $this->createMock(UploadedFileInterface::class);
+        $uploadedFile->method('getError')->willReturn(UPLOAD_ERR_OK);
+        $uploadedFile->method('getSize')->willReturn(1024);
+        $uploadedFile->method('getStream')->willReturn($stream);
+        $uploadedFile->method('getClientFilename')->willReturn('report.txt');
+
+        $chatService = $this->createMock(ChatCapabilitiesInterface::class);
+        $chatService->method('getProviderCapabilities')->willReturn([
+            'visionSupported' => true,
+            'maxFileSize' => 0,
+            'supportedFormats' => ['pdf'],
+        ]);
+
+        $subject = new ChatApiController(
+            $this->repository,
+            $this->processor,
+            $this->config,
+            $chatService,
+            $this->resourceFactory,
+            $this->storageRepository,
+            new DocumentExtractorRegistry([]),
+        );
+
+        $request = $this->createMock(ServerRequestInterface::class);
+        $request->method('getUploadedFiles')->willReturn(['file' => $uploadedFile]);
+
+        try {
+            $response = $subject->fileUpload($request);
+        } finally {
+            @unlink($tmpPath);
+        }
+
+        self::assertSame(422, $response->getStatusCode());
+        $data = json_decode((string) $response->getBody(), true);
+        self::assertStringContainsString('extension', $data['error']);
     }
 
     #[Test]
@@ -1308,6 +1361,7 @@ class ChatApiControllerTest extends TestCase
         $uploadedFile->method('getError')->willReturn(UPLOAD_ERR_OK);
         $uploadedFile->method('getSize')->willReturn(9);
         $uploadedFile->method('getStream')->willReturn($stream);
+        $uploadedFile->method('getClientFilename')->willReturn('test.txt');
 
         $extractor = $this->createMock(DocumentExtractorInterface::class);
         $extractor->method('getSupportedMimeTypes')->willReturn(['text/plain']);

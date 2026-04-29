@@ -43,8 +43,8 @@ class PdfExtractorTest extends TestCase
     public function validateThrowsForCorruptFile(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionCode(1743000030);
-        $this->expectExceptionMessageMatches('/^PDF validation failed:/');
+        $this->expectExceptionCode(1743000034);
+        $this->expectExceptionMessage('PDF header is invalid');
         $this->subject->validate($this->fixtures . '/corrupt.pdf');
     }
 
@@ -60,5 +60,20 @@ class PdfExtractorTest extends TestCase
     {
         $text = $this->subject->extract($this->fixtures . '/sample.pdf');
         self::assertStringContainsString('Hello PDF', $text);
+    }
+
+    #[Test]
+    public function validateRejectsActivePdfContentMarkers(): void
+    {
+        $tmpPath = tempnam(sys_get_temp_dir(), 'nr_pdf_');
+        file_put_contents($tmpPath, "%PDF-1.4\n1 0 obj\n<< /OpenAction 2 0 R >>\nendobj\n");
+
+        try {
+            $this->expectException(RuntimeException::class);
+            $this->expectExceptionCode(1743000035);
+            $this->subject->validate($tmpPath);
+        } finally {
+            @unlink($tmpPath);
+        }
     }
 }

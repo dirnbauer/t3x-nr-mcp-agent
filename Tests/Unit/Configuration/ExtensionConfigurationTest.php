@@ -26,6 +26,10 @@ class ExtensionConfigurationTest extends TestCase
             'maxMessageLength' => '5000',
             'maxActiveConversationsPerUser' => '2',
             'enablePdfTextExtraction' => '1',
+            'maxUploadFileSize' => '1048576',
+            'maxExtractedTextLength' => '12000',
+            'enablePromptInjectionFilter' => '1',
+            'rejectActivePdfContent' => '1',
             'mcpServerCommand' => '/usr/bin/typo3',
             'mcpServerArgs' => 'mcp:server',
         ]);
@@ -186,6 +190,10 @@ class ExtensionConfigurationTest extends TestCase
         self::assertSame(10000, $config->getMaxMessageLength());
         self::assertSame(3, $config->getMaxActiveConversationsPerUser());
         self::assertFalse($config->isPdfTextExtractionEnabled());
+        self::assertSame(20 * 1024 * 1024, $config->getMaxUploadFileSize());
+        self::assertSame(20000, $config->getMaxExtractedTextLength());
+        self::assertTrue($config->isPromptInjectionFilterEnabled());
+        self::assertTrue($config->shouldRejectActivePdfContent());
     }
 
     #[Test]
@@ -214,6 +222,16 @@ class ExtensionConfigurationTest extends TestCase
     {
         $config = new ExtensionConfiguration();
         self::assertTrue($config->isPdfTextExtractionEnabled());
+    }
+
+    #[Test]
+    public function securityUploadSettingsReturnConfiguredValues(): void
+    {
+        $config = new ExtensionConfiguration();
+        self::assertSame(1048576, $config->getMaxUploadFileSize());
+        self::assertSame(12000, $config->getMaxExtractedTextLength());
+        self::assertTrue($config->isPromptInjectionFilterEnabled());
+        self::assertTrue($config->shouldRejectActivePdfContent());
     }
 
     #[Test]

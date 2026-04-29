@@ -36,6 +36,9 @@ final readonly class ChatApiController
         'gif'  => 'image/gif',
         'webp' => 'image/webp',
         'pdf'  => 'application/pdf',
+        'txt'  => 'text/plain',
+        'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     ];
 
     public function __construct(
@@ -287,18 +290,36 @@ final readonly class ChatApiController
 
         $allowedMimeTypes = $this->getAllowedAttachmentMimeTypes();
 
-        $maxSize = 20 * 1024 * 1024; // 20 MB
-        if ($file->getSize() > $maxSize) {
-            return new JsonResponse(['error' => 'File too large (max 20 MB)'], 400);
+        $maxSize = $this->getConfiguredMaxUploadFileSize();
+        $reportedSize = $file->getSize();
+        if ($reportedSize !== null && $reportedSize > $maxSize) {
+            return new JsonResponse(['error' => sprintf('File too large (max %s)', $this->formatBytes($maxSize))], 400);
         }
 
         // Validate MIME type server-side via finfo — client-supplied Content-Type is untrusted
         $uri = $file->getStream()->getMetadata('uri');
         $tempPath = is_string($uri) ? $uri : '';
+        if ($tempPath === '' || !is_file($tempPath) || !is_readable($tempPath)) {
+            return new JsonResponse(['error' => 'Uploaded file could not be read'], 400);
+        }
+        $actualSize = filesize($tempPath);
+        if ($actualSize === false || $actualSize <= 0) {
+            return new JsonResponse(['error' => 'Uploaded file is empty'], 400);
+        }
+        if ($actualSize > $maxSize) {
+            return new JsonResponse(['error' => sprintf('File too large (max %s)', $this->formatBytes($maxSize))], 400);
+        }
+
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         $detectedMime = $finfo->file($tempPath);
         if (!is_string($detectedMime) || !in_array($detectedMime, $allowedMimeTypes, true)) {
             return new JsonResponse(['error' => 'File type not supported'], 422);
+        }
+        $clientFilename = $file->getClientFilename() ?? 'upload';
+        $clientExtension = strtolower(pathinfo($clientFilename, PATHINFO_EXTENSION));
+        $allowedExtensions = $this->getAllowedExtensionsForMimeType($detectedMime);
+        if ($clientExtension === '' || !in_array($clientExtension, $allowedExtensions, true)) {
+            return new JsonResponse(['error' => 'File extension does not match detected content type'], 422);
         }
 
         // For enabled extraction-backed formats, run lightweight validation at upload time
@@ -318,11 +339,11 @@ final readonly class ChatApiController
         $beUserUid = $this->getBeUserUid();
         $targetFolder = $this->getOrCreateUploadFolder($storage, $beUserUid);
 
-        $clientFilename = $file->getClientFilename() ?? 'upload';
+        $storageFilename = $this->buildSafeStorageFilename($clientFilename, $clientExtension);
         $falFile = $storage->addFile(
             $tempPath,
             $targetFolder,
-            $clientFilename,
+            $storageFilename,
         );
 
         return new JsonResponse([
@@ -559,7 +580,7 @@ final readonly class ChatApiController
     {
         $capabilities = $this->chatService->getProviderCapabilities();
         $providerMimeTypes = array_values(array_filter(array_map(
-            static fn(string $extension): ?string => self::EXTENSION_MIME_MAP[strtolower($extension)] ?? null,
+            fn(string $format): ?string => $this->normaliseSupportedFormatToMimeType($format),
             $capabilities['supportedFormats'] ?? [],
         )));
 
@@ -575,10 +596,18 @@ final readonly class ChatApiController
     private function getAllowedAttachmentExtensions(): array
     {
         $capabilities = $this->chatService->getProviderCapabilities();
-        $providerExtensions = array_values(array_filter(array_map(
-            static fn(string $extension): string => strtolower(trim($extension)),
-            $capabilities['supportedFormats'] ?? [],
-        ), static fn(string $extension): bool => $extension !== '' && !str_contains($extension, '/')));
+        $providerExtensions = [];
+        foreach ($capabilities['supportedFormats'] ?? [] as $format) {
+            $format = strtolower(trim($format));
+            if ($format === '') {
+                continue;
+            }
+            if (str_contains($format, '/')) {
+                $providerExtensions = array_merge($providerExtensions, $this->getAllowedExtensionsForMimeType($format));
+                continue;
+            }
+            $providerExtensions[] = $format;
+        }
 
         return array_values(array_unique(array_merge(
             $providerExtensions,
@@ -616,6 +645,62 @@ final readonly class ChatApiController
             $extensions,
             static fn(string $extension): bool => $extension !== 'pdf',
         ));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function getAllowedExtensionsForMimeType(string $mimeType): array
+    {
+        $extensions = [];
+        foreach (self::EXTENSION_MIME_MAP as $extension => $mappedMimeType) {
+            if ($mappedMimeType === $mimeType) {
+                $extensions[] = $extension;
+            }
+        }
+        return $extensions;
+    }
+
+    private function normaliseSupportedFormatToMimeType(string $format): ?string
+    {
+        $format = strtolower(trim($format));
+        if ($format === '') {
+            return null;
+        }
+        if (str_contains($format, '/')) {
+            return $format;
+        }
+        return self::EXTENSION_MIME_MAP[$format] ?? null;
+    }
+
+    private function getConfiguredMaxUploadFileSize(): int
+    {
+        $configured = $this->config->getMaxUploadFileSize();
+        return $configured > 0 ? $configured : 20 * 1024 * 1024;
+    }
+
+    private function formatBytes(int $bytes): string
+    {
+        if ($bytes >= 1024 * 1024) {
+            return sprintf('%d MB', (int) ceil($bytes / 1024 / 1024));
+        }
+        if ($bytes >= 1024) {
+            return sprintf('%d KB', (int) ceil($bytes / 1024));
+        }
+        return $bytes . ' bytes';
+    }
+
+    private function buildSafeStorageFilename(string $clientFilename, string $extension): string
+    {
+        $baseName = pathinfo($clientFilename, PATHINFO_FILENAME);
+        $safeBaseName = preg_replace('/[^a-zA-Z0-9._-]+/', '-', $baseName) ?? '';
+        $safeBaseName = trim($safeBaseName, '.-_');
+        if ($safeBaseName === '') {
+            $safeBaseName = 'upload';
+        }
+        $safeBaseName = mb_substr($safeBaseName, 0, 60);
+
+        return sprintf('%s-%s.%s', $safeBaseName, bin2hex(random_bytes(8)), $extension);
     }
 
     private function isExtractionEnabledForMimeType(string $mimeType): bool

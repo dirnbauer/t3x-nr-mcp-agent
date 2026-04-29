@@ -24,3 +24,15 @@ maxActiveConversationsPerUser = 3
 
 # cat=basic/security; type=boolean; label=Enable PDF text extraction fallback (disabled sends PDFs only as provider-native documents)
 enablePdfTextExtraction = 0
+
+# cat=basic/security; type=int; label=Maximum upload file size in bytes
+maxUploadFileSize = 20971520
+
+# cat=basic/security; type=int; label=Maximum extracted document text length in characters before truncation
+maxExtractedTextLength = 20000
+
+# cat=basic/security; type=boolean; label=Filter prompt-injection-like directives from extracted document text
+enablePromptInjectionFilter = 1
+
+# cat=basic/security; type=boolean; label=Reject PDFs containing active content markers such as JavaScript, launch actions, embedded files, or XFA
+rejectActivePdfContent = 1

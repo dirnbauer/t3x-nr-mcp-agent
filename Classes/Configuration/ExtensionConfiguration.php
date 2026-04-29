@@ -80,6 +80,26 @@ class ExtensionConfiguration
         return $this->getString('enablePdfTextExtraction', '0') === '1';
     }
 
+    public function getMaxUploadFileSize(): int
+    {
+        return max(0, (int) $this->getString('maxUploadFileSize', (string) (20 * 1024 * 1024)));
+    }
+
+    public function getMaxExtractedTextLength(): int
+    {
+        return max(0, (int) $this->getString('maxExtractedTextLength', '20000'));
+    }
+
+    public function isPromptInjectionFilterEnabled(): bool
+    {
+        return $this->getString('enablePromptInjectionFilter', '1') === '1';
+    }
+
+    public function shouldRejectActivePdfContent(): bool
+    {
+        return $this->getString('rejectActivePdfContent', '1') === '1';
+    }
+
     private function getString(string $key, string $default): string
     {
         $value = $this->config[$key] ?? $default;
