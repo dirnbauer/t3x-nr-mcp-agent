@@ -3,7 +3,7 @@ import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {lll} from '@typo3/core/lit-helper.js';
 import {ChatCoreController} from './chat-core.js';
 import {markdownStyles} from './markdown-styles.js';
-import {AVATAR_ASSISTANT, AVATAR_USER, ICON_PAPERCLIP, ICON_SEND, ICON_COMPOSE, ICON_CHEVRON_DOWN, ICON_UPLOAD, ICON_MENU, ICON_PANEL_LEFT_CLOSE, ICON_PIN} from './icons.js';
+import {AVATAR_ASSISTANT, AVATAR_USER, ICON_PAPERCLIP, ICON_SEND, ICON_COMPOSE, ICON_CHEVRON_DOWN, ICON_UPLOAD, ICON_HISTORY, ICON_MENU, ICON_PANEL_LEFT_CLOSE, ICON_PIN, ICON_ARCHIVE} from './icons.js';
 
 /**
  * <nr-chat-app> – Main chat application component.
@@ -28,10 +28,12 @@ export class ChatApp extends LitElement {
             border-radius: var(--typo3-component-border-radius);
             overflow: hidden;
             font-family: var(--typo3-font-family, sans-serif);
-            background: var(--typo3-component-bg);
+            background: var(--typo3-surface-container-lowest);
             color: var(--typo3-component-color);
-            box-shadow: var(--typo3-component-box-shadow);
+            box-shadow: var(--typo3-component-box-shadow-window, var(--typo3-component-box-shadow));
             font-size: var(--typo3-component-font-size, 13px);
+            --nr-chat-control-size: 34px;
+            --nr-chat-focus-ring: 0 0 0 var(--typo3-outline-width, .25rem) color-mix(in srgb, var(--typo3-input-focus-border-color), transparent var(--typo3-outline-transparent-mix, 25%));
         }
 
         .chat-body {
@@ -42,12 +44,13 @@ export class ChatApp extends LitElement {
 
         /* Sidebar */
         .sidebar {
-            width: 280px;
-            min-width: 280px;
+            width: 300px;
+            min-width: 300px;
             border-right: 1px solid var(--typo3-component-border-color);
             display: flex;
             flex-direction: column;
             background: var(--typo3-surface-container-low);
+            transition: width .18s ease, min-width .18s ease;
         }
         .sidebar.collapsed {
             width: 0;
@@ -59,47 +62,84 @@ export class ChatApp extends LitElement {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px;
+            gap: calc(var(--typo3-spacing) * .5);
+            padding: calc(var(--typo3-spacing) * .75);
             border-bottom: 1px solid var(--typo3-component-border-color);
+            background: var(--typo3-surface-container-base);
         }
-        .sidebar-header h3 {
+        .sidebar-title {
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: calc(var(--typo3-spacing) * .5);
+        }
+        .sidebar-title-icon {
+            width: var(--nr-chat-control-size);
+            height: var(--nr-chat-control-size);
+            border: 1px solid var(--typo3-component-border-color);
+            border-radius: var(--typo3-component-border-radius);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--typo3-text-color-primary);
+            background: var(--typo3-surface-container-lowest);
+            box-shadow: var(--typo3-component-box-shadow);
+        }
+        .sidebar-title h3 {
             margin: 0;
             font-size: 14px;
+            font-weight: 600;
+            line-height: 1.2;
         }
         .conversation-list {
             flex: 1;
             overflow-y: auto;
-            padding: 4px 0;
+            padding: calc(var(--typo3-spacing) * .5);
+            scrollbar-gutter: stable;
         }
         .conversation-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 10px 12px;
+            gap: calc(var(--typo3-spacing) * .5);
+            min-height: 42px;
+            padding: calc(var(--typo3-spacing) * .55) calc(var(--typo3-spacing) * .625);
+            margin-block-end: 2px;
             cursor: pointer;
-            border-bottom: 1px solid var(--typo3-component-border-color);
-            transition: background 0.15s;
+            border: 1px solid transparent;
+            border-radius: var(--typo3-component-border-radius);
+            transition: var(--typo3-transition-color, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out);
         }
         .conversation-item:hover,
         .conversation-item:focus-visible {
             background: var(--typo3-component-hover-bg);
+            border-color: var(--typo3-component-border-color);
         }
         .conversation-item:focus-visible {
-            outline: 2px solid var(--typo3-input-focus-border-color);
-            outline-offset: -2px;
+            outline: none;
+            box-shadow: var(--nr-chat-focus-ring);
         }
         .conversation-item.active {
             background: var(--typo3-component-active-bg);
+            color: var(--typo3-state-primary-color);
+            border-color: var(--typo3-state-primary-border-color);
+            box-shadow: inset 3px 0 0 var(--typo3-state-primary-border-color);
         }
         .conversation-item .title {
             flex: 1;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: calc(var(--typo3-spacing) * .35);
+            min-width: 0;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             font-size: 13px;
+            font-weight: 500;
+        }
+        .conversation-item .title span:last-child {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .pinned-icon {
             display: inline-flex;
@@ -117,47 +157,104 @@ export class ChatApp extends LitElement {
             display: flex;
             flex-direction: column;
             min-width: 0;
+            background: var(--typo3-surface-container-lowest);
         }
         .main-header {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
+            gap: calc(var(--typo3-spacing) * .5);
+            padding: calc(var(--typo3-spacing) * .65) calc(var(--typo3-spacing) * .75);
             border-bottom: 1px solid var(--typo3-component-border-color);
-            min-height: 44px;
+            min-height: 58px;
+            background: var(--typo3-surface-container-base);
+        }
+        .main-title {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: calc(var(--typo3-spacing) * .625);
+        }
+        .main-title-icon {
+            width: var(--nr-chat-control-size);
+            height: var(--nr-chat-control-size);
+            flex: 0 0 var(--nr-chat-control-size);
+            border: 1px solid var(--typo3-state-primary-border-color);
+            border-radius: var(--typo3-component-border-radius);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--typo3-surface-container-primary-text, var(--typo3-text-color-primary));
+            background: var(--typo3-surface-container-primary, var(--typo3-surface-container-low));
+        }
+        .main-title-copy {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .main-title-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        .main-title-meta {
+            display: flex;
+            align-items: center;
+            gap: calc(var(--typo3-spacing) * .375);
+            min-height: 18px;
+        }
+        .main-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: calc(var(--typo3-spacing) * .35);
         }
         .messages {
             flex: 1;
             overflow-y: auto;
-            padding: var(--typo3-spacing);
+            padding: calc(var(--typo3-spacing) * 1.25);
             display: flex;
             flex-direction: column;
-            gap: calc(var(--typo3-spacing) * .75);
+            gap: var(--typo3-spacing);
+            background: var(--typo3-surface-container-lowest);
+            scrollbar-gutter: stable;
         }
         /* Message row layout (avatar + bubble + timestamp) */
         .message-row {
             display: flex;
             align-items: flex-end;
-            gap: 8px;
+            gap: calc(var(--typo3-spacing) * .625);
         }
         .message-row.user { flex-direction: row-reverse; }
         .message-bubble {
             display: flex;
             flex-direction: column;
-            max-width: 78%;
+            max-width: min(76%, 58rem);
         }
         .message-row.user .message-bubble { align-items: flex-end; }
         .avatar {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            border-radius: var(--typo3-component-border-radius);
             flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
+            border: 1px solid var(--typo3-component-border-color);
+            box-shadow: var(--typo3-component-box-shadow);
         }
-        .avatar-assistant { background: var(--typo3-state-primary-bg); color: var(--typo3-state-primary-color); }
-        .avatar-user { background: var(--typo3-state-default-bg); color: var(--typo3-state-default-color); }
+        .avatar-assistant {
+            background: var(--typo3-surface-container-primary, var(--typo3-state-primary-bg));
+            color: var(--typo3-surface-container-primary-text, var(--typo3-state-primary-color));
+            border-color: var(--typo3-state-primary-border-color);
+        }
+        .avatar-user {
+            background: var(--typo3-surface-container-high);
+            color: var(--typo3-state-default-color);
+        }
         .message-time {
             font-size: 11px;
             color: var(--typo3-text-color-variant);
@@ -165,25 +262,30 @@ export class ChatApp extends LitElement {
             padding: 0 2px;
         }
         .message {
-            padding: 10px 14px;
-            border-radius: 8px;
+            padding: calc(var(--typo3-spacing) * .7) calc(var(--typo3-spacing) * .85);
+            border: 1px solid transparent;
+            border-radius: var(--typo3-component-border-radius);
             font-size: 13.5px;
             line-height: 1.5;
             word-break: break-word;
+            box-shadow: var(--typo3-component-box-shadow);
         }
         .message.user {
             background: var(--typo3-state-primary-bg);
             color: var(--typo3-state-primary-color);
+            border-color: var(--typo3-state-primary-border-color);
             border-bottom-right-radius: 2px;
         }
         .message.assistant {
-            background: var(--typo3-surface-container-base);
+            background: var(--typo3-component-bg);
             color: var(--typo3-text-color-base);
+            border-color: var(--typo3-component-border-color);
             border-bottom-left-radius: 2px;
         }
         .message.tool {
             align-self: flex-start;
             background: var(--typo3-surface-container-base);
+            border: 1px solid var(--typo3-component-border-color);
             font-size: 12px;
             font-family: monospace;
             opacity: 0.7;
@@ -211,6 +313,9 @@ export class ChatApp extends LitElement {
         }
         .message.system {
             align-self: center;
+            background: transparent;
+            border-color: transparent;
+            box-shadow: none;
             font-size: 12px;
             color: var(--typo3-text-color-variant);
             font-style: italic;
@@ -225,10 +330,11 @@ export class ChatApp extends LitElement {
         /* Attachment area */
         .file-badge {
             display: flex; align-items: center; gap: 6px;
-            padding: 4px 8px; margin: 4px 12px 0;
-            background: var(--typo3-surface-container-low);
+            padding: 6px 10px; margin: 0 calc(var(--typo3-spacing) * .75) calc(var(--typo3-spacing) * .5);
+            background: var(--typo3-surface-container-info);
+            color: var(--typo3-surface-container-info-text);
             border: 1px solid var(--typo3-component-border-color);
-            border-radius: 6px; font-size: 12px;
+            border-radius: var(--typo3-component-border-radius); font-size: 12px;
         }
         .file-badge .file-badge-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .file-badge .remove { cursor: pointer; opacity: 0.5; font-size: 16px; line-height: 1; }
@@ -242,9 +348,9 @@ export class ChatApp extends LitElement {
         .attach-menu-wrap { position: relative; }
         .attach-menu {
             position: absolute;
-            bottom: calc(100% + 4px);
+            bottom: calc(100% + 6px);
             left: 0;
-            background: var(--typo3-surface-container-lowest);
+            background: var(--typo3-component-bg);
             border: 1px solid var(--typo3-component-border-color);
             border-radius: var(--typo3-component-border-radius);
             box-shadow: var(--typo3-component-box-shadow-flyout);
@@ -263,53 +369,59 @@ export class ChatApp extends LitElement {
             font-size: 13px;
             white-space: nowrap;
         }
-        .attach-menu li:hover { background: var(--typo3-surface-container-base); }
+        .attach-menu li:hover { background: var(--typo3-component-hover-bg); }
 
         /* Input area */
         .input-area {
             display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: var(--typo3-component-padding-y) var(--typo3-component-padding-x);
+            align-items: flex-end;
+            gap: calc(var(--typo3-spacing) * .5);
+            padding: calc(var(--typo3-spacing) * .75);
             border-top: 1px solid var(--typo3-component-border-color);
-            background: var(--typo3-surface-container-low);
+            background: var(--typo3-surface-container-base);
         }
         .input-wrap {
             flex: 1;
             display: flex;
-            align-items: center;
-            gap: 4px;
+            align-items: flex-end;
+            gap: calc(var(--typo3-spacing) * .5);
             border: 1px solid var(--typo3-input-border-color);
             border-radius: var(--typo3-input-border-radius);
-            padding: 4px 4px 4px 12px;
-            background: var(--typo3-surface-container-lowest);
-            transition: border-color 0.15s, box-shadow 0.15s;
+            padding: calc(var(--typo3-spacing) * .375);
+            padding-inline-start: calc(var(--typo3-spacing) * .75);
+            background: var(--typo3-input-bg, var(--typo3-surface-container-lowest));
+            box-shadow: var(--typo3-component-box-shadow);
+            transition: var(--typo3-transition-color, border-color .15s ease-in-out, box-shadow .15s ease-in-out);
         }
         .input-wrap:focus-within {
             border-color: var(--typo3-input-focus-border-color);
-            box-shadow: 0 0 0 1px var(--typo3-input-focus-border-color);
+            box-shadow: var(--nr-chat-focus-ring);
         }
         .input-wrap textarea {
             flex: 1;
             resize: none;
             border: none;
             outline: none;
-            padding: 5px 0;
+            padding: calc(var(--typo3-spacing) * .35) 0;
             font-family: inherit;
             font-size: 13px;
             line-height: 1.4;
-            min-height: 44px;
+            min-height: 40px;
             max-height: 120px;
             overflow-y: auto;
             background: transparent;
+            color: var(--typo3-input-color, var(--typo3-text-color-base));
+        }
+        .input-wrap textarea::placeholder {
+            color: var(--typo3-input-placeholder-color, var(--typo3-text-color-variant));
         }
         .btn-send {
             appearance: none;
             -webkit-appearance: none;
             flex-shrink: 0;
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
+            width: var(--nr-chat-control-size);
+            height: var(--nr-chat-control-size);
+            border-radius: var(--typo3-input-border-radius);
             border: 1px solid var(--typo3-state-primary-border-color);
             background: var(--typo3-state-primary-bg);
             background-image: none;
@@ -318,10 +430,14 @@ export class ChatApp extends LitElement {
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: background 0.15s, opacity 0.15s;
-            margin: 0 2px 0 0;
+            transition: var(--typo3-transition-color, background-color .15s ease-in-out, opacity .15s ease-in-out);
+            margin: 0;
         }
         .btn-send:hover:not(:disabled) { background: var(--typo3-state-primary-hover-bg); background-image: none; }
+        .btn-send:focus-visible {
+            outline: none;
+            box-shadow: var(--nr-chat-focus-ring);
+        }
         .btn-send:disabled { opacity: 0.35; cursor: not-allowed; }
 
         /* Buttons */
@@ -338,10 +454,15 @@ export class ChatApp extends LitElement {
             cursor: pointer;
             font-size: 13px;
             white-space: nowrap;
-            transition: background 0.15s;
+            transition: var(--typo3-transition-color, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out);
         }
         .btn:hover {
-            background: var(--typo3-component-hover-bg);
+            background: var(--typo3-state-default-hover-bg, var(--typo3-component-hover-bg));
+            border-color: var(--typo3-state-default-hover-border-color, var(--typo3-component-border-color));
+        }
+        .btn:focus-visible {
+            outline: none;
+            box-shadow: var(--nr-chat-focus-ring);
         }
         .btn:disabled {
             opacity: 0.5;
@@ -360,28 +481,49 @@ export class ChatApp extends LitElement {
             font-size: var(--typo3-font-size-small, 12px);
         }
         .btn-icon {
-            min-width: 34px;
-            min-height: 34px;
+            min-width: var(--nr-chat-control-size);
+            min-height: var(--nr-chat-control-size);
             padding: 6px;
-            border: none;
+            border: 1px solid transparent;
             background: transparent;
+        }
+        .btn-icon.btn-primary {
+            border-color: var(--typo3-state-primary-border-color);
+            background: var(--typo3-state-primary-bg);
+            color: var(--typo3-state-primary-color);
         }
         .btn-icon:hover {
             background: var(--typo3-component-hover-bg);
+            border-color: var(--typo3-component-border-color);
+        }
+        .btn-icon.btn-primary:hover:not(:disabled) {
+            background: var(--typo3-state-primary-hover-bg);
+            border-color: var(--typo3-state-primary-hover-border-color);
+            color: var(--typo3-state-primary-hover-color);
         }
         .btn-icon:focus-visible {
-            outline: 2px solid var(--typo3-input-focus-border-color);
-            outline-offset: -2px;
+            outline: none;
+            box-shadow: var(--nr-chat-focus-ring);
+        }
+        .btn-quiet {
+            color: var(--typo3-text-color-variant);
+        }
+        .btn-quiet:hover {
+            color: var(--typo3-text-color-base);
         }
 
         /* Status indicators */
         .status-badge {
-            display: inline-block;
-            padding: 2px 6px;
+            display: inline-flex;
+            align-items: center;
+            min-height: 18px;
+            padding: 2px 7px;
             border-radius: 3px;
             font-size: 11px;
             font-weight: 600;
+            line-height: 1;
             text-transform: uppercase;
+            letter-spacing: 0;
         }
         .status-idle { background: var(--typo3-surface-container-success); color: var(--typo3-surface-container-success-text); }
         .status-processing, .status-locked, .status-tool_loop {
@@ -394,10 +536,25 @@ export class ChatApp extends LitElement {
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-direction: column;
+            gap: calc(var(--typo3-spacing) * .75);
             color: var(--typo3-text-color-variant);
             font-size: 14px;
             text-align: center;
             padding: 24px;
+            background: var(--typo3-surface-container-lowest);
+        }
+        .empty-state-icon {
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--typo3-component-border-radius);
+            border: 1px solid var(--typo3-component-border-color);
+            color: var(--typo3-text-color-primary);
+            background: var(--typo3-surface-container-base);
+            box-shadow: var(--typo3-component-box-shadow);
         }
 
         .issues-banner {
@@ -425,10 +582,12 @@ export class ChatApp extends LitElement {
             gap: 4px;
             align-items: center;
             padding: 10px 14px;
-            background: var(--typo3-surface-container-high);
+            background: var(--typo3-component-bg);
             border-radius: 8px;
+            border: 1px solid var(--typo3-component-border-color);
             border-bottom-left-radius: 2px;
             width: fit-content;
+            box-shadow: var(--typo3-component-box-shadow);
         }
         .typing-indicator span {
             width: 7px;
@@ -546,8 +705,11 @@ export class ChatApp extends LitElement {
     _renderSidebar() {
         return html`
             <div class="sidebar-header">
-                <h3>${lll('conversations.title')}</h3>
-                <button class="btn btn-icon"
+                <div class="sidebar-title">
+                    <span class="sidebar-title-icon" aria-hidden="true">${ICON_HISTORY(16)}</span>
+                    <h3>${lll('conversations.title')}</h3>
+                </div>
+                <button class="btn btn-icon btn-primary"
                     @click=${() => this.chat.handleNewConversation()}
                     ?disabled=${!this.chat.available}
                     title="${lll('conversations.new')}"
@@ -602,6 +764,7 @@ export class ChatApp extends LitElement {
                     ${this._renderToggleButton()}
                 </div>
                 <div class="empty-state">
+                    <span class="empty-state-icon" aria-hidden="true">${AVATAR_ASSISTANT(24)}</span>
                     ${this.chat.available
                         ? lll('chat.selectOrCreate')
                         : lll('chat.notAvailable')
@@ -612,19 +775,34 @@ export class ChatApp extends LitElement {
 
         const conv = this.chat.getActiveConversation();
         const isResumable = conv?.resumable || false;
+        const status = conv?.status || 'idle';
 
         return html`
             <div class="main-header">
                 ${this._renderToggleButton()}
-                <strong style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                    ${conv?.title || lll('conversations.newConversation')}
-                </strong>
-                <button class="btn btn-sm" @click=${() => this.chat.handleTogglePin()}
-                    title="${conv?.pinned ? lll('conversations.unpin') : lll('conversations.pin')}"
-                    aria-label="${conv?.pinned ? lll('conversations.unpin') : lll('conversations.pin')}">
-                    ${ICON_PIN(16)}
-                </button>
-                <button class="btn btn-sm" @click=${() => this.chat.handleArchive()}>${lll('conversations.archive')}</button>
+                <div class="main-title">
+                    <span class="main-title-icon" aria-hidden="true">${AVATAR_ASSISTANT(16)}</span>
+                    <div class="main-title-copy">
+                        <strong class="main-title-name">${conv?.title || lll('conversations.newConversation')}</strong>
+                        <span class="main-title-meta">
+                            <span class="status-badge status-${status}">${status}</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="main-actions">
+                    <button class="btn btn-sm btn-icon btn-quiet" @click=${() => this.chat.handleTogglePin()}
+                        title="${conv?.pinned ? lll('conversations.unpin') : lll('conversations.pin')}"
+                        aria-label="${conv?.pinned ? lll('conversations.unpin') : lll('conversations.pin')}">
+                        ${ICON_PIN(16)}
+                    </button>
+                    <button class="btn btn-sm"
+                        @click=${() => this.chat.handleArchive()}
+                        title="${lll('conversations.archive')}"
+                        aria-label="${lll('conversations.archive')}">
+                        ${ICON_ARCHIVE(14)}
+                        ${lll('conversations.archive')}
+                    </button>
+                </div>
             </div>
 
             <div class="messages" aria-live="polite" aria-relevant="additions">
