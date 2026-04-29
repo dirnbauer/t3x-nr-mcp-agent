@@ -381,10 +381,10 @@ export class AiChatPanel extends LitElement {
         /* Message row layout (avatar + bubble + timestamp) */
         .message-row {
             display: flex;
-            align-items: flex-end;
-            gap: 6px;
+            align-items: flex-start;
+            gap: 7px;
         }
-        .message-row.user { flex-direction: row-reverse; }
+        .message-row.user { justify-content: flex-end; }
         .message-bubble {
             display: flex;
             flex-direction: column;
@@ -392,16 +392,26 @@ export class AiChatPanel extends LitElement {
         }
         .message-row.user .message-bubble { align-items: flex-end; }
         .avatar {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            margin-top: 2px;
+            border-radius: var(--typo3-component-border-radius);
             flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
+            border: 1px solid var(--typo3-component-border-color);
+            box-shadow: var(--typo3-component-box-shadow);
         }
-        .avatar-assistant { background: var(--typo3-state-primary-bg); color: var(--typo3-state-primary-color); }
-        .avatar-user { background: var(--typo3-state-default-bg); color: var(--typo3-state-default-color); }
+        .avatar-assistant {
+            background: var(--typo3-surface-container-primary, var(--typo3-state-primary-bg));
+            color: var(--typo3-surface-container-primary-text, var(--typo3-state-primary-color));
+            border-color: var(--typo3-state-primary-border-color);
+        }
+        .avatar-user {
+            background: var(--typo3-surface-container-high);
+            color: var(--typo3-text-color-base);
+        }
         .message-time {
             font-size: 10px;
             color: var(--typo3-text-color-variant);
