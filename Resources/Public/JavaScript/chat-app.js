@@ -3,7 +3,7 @@ import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {lll} from '@typo3/core/lit-helper.js';
 import {ChatCoreController} from './chat-core.js';
 import {markdownStyles} from './markdown-styles.js';
-import {AVATAR_ASSISTANT, AVATAR_USER, ICON_PAPERCLIP, ICON_SEND, ICON_COMPOSE, ICON_CHEVRON_DOWN, ICON_UPLOAD} from './icons.js';
+import {AVATAR_ASSISTANT, AVATAR_USER, ICON_PAPERCLIP, ICON_SEND, ICON_COMPOSE, ICON_CHEVRON_DOWN, ICON_UPLOAD, ICON_MENU, ICON_PANEL_LEFT_CLOSE, ICON_PIN} from './icons.js';
 
 /**
  * <nr-chat-app> – Main chat application component.
@@ -31,6 +31,7 @@ export class ChatApp extends LitElement {
             background: var(--typo3-component-bg);
             color: var(--typo3-component-color);
             box-shadow: var(--typo3-component-box-shadow);
+            font-size: var(--typo3-component-font-size, 13px);
         }
 
         .chat-body {
@@ -92,10 +93,18 @@ export class ChatApp extends LitElement {
         }
         .conversation-item .title {
             flex: 1;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             font-size: 13px;
+        }
+        .pinned-icon {
+            display: inline-flex;
+            flex-shrink: 0;
+            color: var(--typo3-text-color-warning);
         }
         .conversation-item .meta {
             font-size: 11px;
@@ -139,8 +148,8 @@ export class ChatApp extends LitElement {
         }
         .message-row.user .message-bubble { align-items: flex-end; }
         .avatar {
-            width: 28px;
-            height: 28px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             flex-shrink: 0;
             display: flex;
@@ -158,7 +167,7 @@ export class ChatApp extends LitElement {
         .message {
             padding: 10px 14px;
             border-radius: 8px;
-            font-size: 13px;
+            font-size: 13.5px;
             line-height: 1.5;
             word-break: break-word;
         }
@@ -348,12 +357,21 @@ export class ChatApp extends LitElement {
         }
         .btn-sm {
             padding: 4px 8px;
-            font-size: 12px;
+            font-size: var(--typo3-font-size-small, 12px);
         }
         .btn-icon {
-            padding: 4px 6px;
+            min-width: 34px;
+            min-height: 34px;
+            padding: 6px;
             border: none;
             background: transparent;
+        }
+        .btn-icon:hover {
+            background: var(--typo3-component-hover-bg);
+        }
+        .btn-icon:focus-visible {
+            outline: 2px solid var(--typo3-input-focus-border-color);
+            outline-offset: -2px;
         }
 
         /* Status indicators */
@@ -534,7 +552,7 @@ export class ChatApp extends LitElement {
                     ?disabled=${!this.chat.available}
                     title="${lll('conversations.new')}"
                     aria-label="${lll('conversations.new')}">
-                    ${ICON_COMPOSE(16)}
+                    ${ICON_COMPOSE(20)}
                 </button>
             </div>
             <div class="conversation-list" role="listbox" aria-label="${lll('conversations.title')}">
@@ -552,11 +570,12 @@ export class ChatApp extends LitElement {
             <div class="conversation-item ${isActive ? 'active' : ''}"
                  role="option"
                  tabindex="0"
-                 aria-selected="${isActive}"
+                aria-selected="${isActive}"
                  @click=${() => this.chat.selectConversation(c.uid)}
                  @keydown=${(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.chat.selectConversation(c.uid); } }}>
                 <div class="title">
-                    ${c.pinned ? '\u{1F4CC} ' : ''}${c.title || lll('conversations.newConversation')}
+                    ${c.pinned ? html`<span class="pinned-icon" aria-hidden="true">${ICON_PIN(12)}</span>` : nothing}
+                    <span>${c.title || lll('conversations.newConversation')}</span>
                 </div>
                 <div class="meta">
                     <span class="status-badge status-${c.status}">${c.status}</span>
@@ -571,7 +590,7 @@ export class ChatApp extends LitElement {
                 @click=${() => this._sidebarCollapsed = !this._sidebarCollapsed}
                 title="${this._sidebarCollapsed ? lll('sidebar.show') : lll('sidebar.hide')}"
                 aria-label="${this._sidebarCollapsed ? lll('sidebar.show') : lll('sidebar.hide')}">
-                ${this._sidebarCollapsed ? '\u2630' : '\u2039'}
+                ${this._sidebarCollapsed ? ICON_MENU(18) : ICON_PANEL_LEFT_CLOSE(18)}
             </button>
         `;
     }
@@ -601,8 +620,9 @@ export class ChatApp extends LitElement {
                     ${conv?.title || lll('conversations.newConversation')}
                 </strong>
                 <button class="btn btn-sm" @click=${() => this.chat.handleTogglePin()}
-                    title="${conv?.pinned ? lll('conversations.unpin') : lll('conversations.pin')}">
-                    ${conv?.pinned ? '\u{1F4CC}' : lll('conversations.pin')}
+                    title="${conv?.pinned ? lll('conversations.unpin') : lll('conversations.pin')}"
+                    aria-label="${conv?.pinned ? lll('conversations.unpin') : lll('conversations.pin')}">
+                    ${ICON_PIN(16)}
                 </button>
                 <button class="btn btn-sm" @click=${() => this.chat.handleArchive()}>${lll('conversations.archive')}</button>
             </div>
