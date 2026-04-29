@@ -14,6 +14,7 @@ const ATTACHMENT_ONLY_MESSAGE = 'Please analyze the attached file "%s".';
  * - onScrollToBottom(force) – scroll the message container
  * - onFocusInput()          – focus the textarea
  * - onResetInput()          – reset textarea height after send
+ * - onResponsePrinted?()    – optional hook after an assistant response finished
  */
 export class ChatCoreController {
     /** @type {import('lit').ReactiveControllerHost} */
@@ -52,6 +53,8 @@ export class ChatCoreController {
     _knownMessageCount = 0;
     /** @type {number} */
     _pollFailures = 0;
+    /** @type {boolean} */
+    _assistantResponseReceived = false;
     /** @type {HTMLElement|null} — overlay wrapping the element-browser iframe */
     _falPickerOverlay = null;
 
@@ -121,6 +124,7 @@ export class ChatCoreController {
     async selectConversation(uid) {
         this.activeUid = uid;
         this._knownMessageCount = 0;
+        this._assistantResponseReceived = false;
         this.expandedTools = new Set();
         this.pendingFile = null;
         this.host.requestUpdate();
@@ -149,6 +153,7 @@ export class ChatCoreController {
         const uid = this.activeUid;
         if (!uid) return;
         try {
+            const wasProcessing = this.isProcessing();
             const data = await this._api.getMessages(uid, this._knownMessageCount);
             if (uid !== this.activeUid) return; // stale response, discard
             const newMessages = data.messages || [];
@@ -157,6 +162,9 @@ export class ChatCoreController {
             if (newMessages.length > 0 || statusChanged) {
                 if (newMessages.length > 0) {
                     this.messages = [...this.messages, ...newMessages];
+                    if (this._containsAssistantResult(newMessages)) {
+                        this._assistantResponseReceived = true;
+                    }
                 }
                 this.status = data.status;
                 this.errorMessage = data.errorMessage || '';
@@ -181,6 +189,10 @@ export class ChatCoreController {
             // Stop polling when no longer processing
             if (!this.isProcessing()) {
                 this.stopPolling();
+                if (wasProcessing && this._assistantResponseReceived) {
+                    this._assistantResponseReceived = false;
+                    this.host.onResponsePrinted?.();
+                }
             }
         } catch {
             this._pollFailures++;
@@ -242,6 +254,7 @@ export class ChatCoreController {
         const messageContent = content || this._getAttachmentOnlyMessage(pendingFile?.name);
 
         this.sending = true;
+        this._assistantResponseReceived = false;
         this.errorMessage = '';
         this.host.requestUpdate();
         try {
@@ -292,6 +305,7 @@ export class ChatCoreController {
         try {
             await this._api.resumeConversation(this.activeUid);
             this.status = 'processing';
+            this._assistantResponseReceived = false;
             this.errorMessage = '';
             this.conversations = this.conversations.map(c =>
                 c.uid === this.activeUid ? {...c, status: 'processing'} : c
@@ -398,6 +412,21 @@ export class ChatCoreController {
             return label;
         }
         return ATTACHMENT_ONLY_MESSAGE.replace('%s', fileName || lll('attachment.file') || 'file');
+    }
+
+    _containsAssistantResult(messages) {
+        return messages.some((message) => {
+            if (message.role !== 'assistant') {
+                return false;
+            }
+            if (typeof message.content === 'string') {
+                return message.content.trim() !== '';
+            }
+            if (Array.isArray(message.content)) {
+                return message.content.length > 0;
+            }
+            return message.content != null;
+        });
     }
 
     _openFalPicker() {

@@ -699,9 +699,45 @@ export class ChatApp extends LitElement {
         });
     }
 
+    onResponsePrinted() {
+        if (!this._shouldFocusAfterResponse()) {
+            return;
+        }
+        this.onFocusInput();
+    }
+
     onResetInput() {
         const ta = this.renderRoot?.querySelector('.input-area textarea');
         if (ta) ta.style.height = 'auto';
+    }
+
+    _shouldFocusAfterResponse() {
+        if (!this.isConnected || document.visibilityState !== 'visible') {
+            return false;
+        }
+        if (typeof document.hasFocus === 'function' && !document.hasFocus()) {
+            return false;
+        }
+        try {
+            if (top?.document?.visibilityState && top.document.visibilityState !== 'visible') {
+                return false;
+            }
+        } catch {
+            // Cross-frame access can fail in unusual embedding contexts.
+        }
+
+        const activeElement = document.activeElement;
+        if (activeElement && activeElement !== document.body && activeElement !== this && !this.contains(activeElement)) {
+            return false;
+        }
+
+        const shadowActiveElement = this.renderRoot?.activeElement;
+        if (shadowActiveElement?.matches?.('button, select, input, textarea, [contenteditable="true"]')
+            && !shadowActiveElement.matches('.input-area textarea, .btn-send')) {
+            return false;
+        }
+
+        return true;
     }
 
     // ── DOM-specific event handlers ────────────────────────────────────

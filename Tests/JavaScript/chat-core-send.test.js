@@ -14,6 +14,7 @@ function makeHost() {
         onResetInput: jest.fn(),
         onScrollToBottom: jest.fn(),
         onFocusInput: jest.fn(),
+        onResponsePrinted: jest.fn(),
     };
 }
 
@@ -54,5 +55,27 @@ describe('ChatCoreController send state', () => {
         expect(ctrl.status).toBe('processing');
         expect(host.onResetInput).toHaveBeenCalled();
         expect(host.onScrollToBottom).toHaveBeenCalledWith(true);
+    });
+
+    test('pollMessages notifies host when an assistant response finishes', async () => {
+        const host = makeHost();
+        const ctrl = new ChatCoreController(host);
+        ctrl._api = {
+            getMessages: jest.fn().mockResolvedValue({
+                messages: [{role: 'assistant', content: 'Done.'}],
+                status: 'idle',
+                errorMessage: '',
+                totalCount: 2,
+            }),
+        };
+        ctrl.activeUid = 123;
+        ctrl.status = 'processing';
+        ctrl._knownMessageCount = 1;
+        ctrl.conversations = [{uid: 123, status: 'processing'}];
+
+        await ctrl.pollMessages();
+
+        expect(host.onResponsePrinted).toHaveBeenCalledTimes(1);
+        expect(host.onScrollToBottom).toHaveBeenCalled();
     });
 });
