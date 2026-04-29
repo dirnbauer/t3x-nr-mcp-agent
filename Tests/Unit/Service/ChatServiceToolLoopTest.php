@@ -7,6 +7,8 @@ namespace Netresearch\NrMcpAgent\Tests\Unit\Service;
 use Netresearch\NrLlm\Domain\Model\CompletionResponse;
 use Netresearch\NrLlm\Domain\Model\Model as LlmModel;
 use Netresearch\NrLlm\Domain\Model\UsageStatistics;
+use Netresearch\NrLlm\Domain\ValueObject\ToolCall;
+use Netresearch\NrLlm\Domain\ValueObject\ToolSpec;
 use Netresearch\NrLlm\Provider\Contract\ProviderInterface;
 use Netresearch\NrLlm\Provider\Contract\ToolCapableInterface;
 use Netresearch\NrLlm\Provider\ProviderAdapterRegistry;
@@ -107,6 +109,35 @@ class ChatServiceToolLoopTest extends TestCase
     }
 
     #[Test]
+    public function toolDefinitionsAreConvertedToToolSpecsBeforeProviderCall(): void
+    {
+        $this->setUpBeUser();
+
+        $conversation = new Conversation();
+        $conversation->setBeUser(1);
+        $conversation->appendMessage(MessageRole::User, 'Use a tool');
+
+        $provider = $this->createMock(ToolCapableProviderStub::class);
+        $provider->expects(self::once())
+            ->method('chatCompletionWithTools')
+            ->with(
+                self::anything(),
+                self::callback(static function (array $tools): bool {
+                    return isset($tools[0])
+                        && $tools[0] instanceof ToolSpec
+                        && $tools[0]->name === 'dummy_tool';
+                }),
+                self::anything(),
+            )
+            ->willReturn($this->createCompletionResponse('Done'));
+
+        $service = $this->createService($provider);
+        $service->processConversation($conversation);
+
+        self::assertSame(ConversationStatus::Idle, $conversation->getStatus());
+    }
+
+    #[Test]
     public function maxToolIterationsReachedSetsFailed(): void
     {
         $this->setUpBeUser();
@@ -177,6 +208,41 @@ class ChatServiceToolLoopTest extends TestCase
         $messages = $conversation->getDecodedMessages();
         // user, assistant+tool_calls, tool, assistant
         self::assertGreaterThanOrEqual(4, count($messages));
+    }
+
+    #[Test]
+    public function executeToolCallsHandlesTypedToolCalls(): void
+    {
+        $this->setUpBeUser();
+
+        $conversation = new Conversation();
+        $conversation->setBeUser(1);
+        $conversation->appendMessage(MessageRole::User, 'call typed tool');
+
+        $toolCall = ToolCall::function('call_typed', 'typed_tool', ['key' => 'val']);
+
+        $callCount = 0;
+        $provider = $this->createMock(ToolCapableProviderStub::class);
+        $provider->method('chatCompletionWithTools')
+            ->willReturnCallback(function () use ($toolCall, &$callCount) {
+                $callCount++;
+                if ($callCount === 1) {
+                    return $this->createCompletionResponse('', [$toolCall]);
+                }
+                return $this->createCompletionResponse('Done');
+            });
+
+        $mcpProvider = $this->createMock(McpToolProviderInterface::class);
+        $mcpProvider->method('getToolDefinitions')->willReturn($this->dummyTools);
+        $mcpProvider->expects(self::once())
+            ->method('executeTool')
+            ->with('typed_tool', ['key' => 'val'])
+            ->willReturn('tool output');
+
+        $service = $this->createService($provider, mcpProvider: $mcpProvider);
+        $service->processConversation($conversation);
+
+        self::assertSame(ConversationStatus::Idle, $conversation->getStatus());
     }
 
     #[Test]

@@ -6,6 +6,8 @@ namespace Netresearch\NrMcpAgent\Service;
 
 use LogicException;
 use Netresearch\NrLlm\Domain\Model\CompletionResponse;
+use Netresearch\NrLlm\Domain\ValueObject\ToolCall;
+use Netresearch\NrLlm\Domain\ValueObject\ToolSpec;
 use Netresearch\NrLlm\Provider\Contract\DocumentCapableInterface;
 use Netresearch\NrLlm\Provider\Contract\ProviderInterface;
 use Netresearch\NrLlm\Provider\Contract\ToolCapableInterface;
@@ -183,7 +185,7 @@ final class ChatService implements ChatCapabilitiesInterface
     /**
      * Agent loop with MCP tools — used when tools are available.
      *
-     * @param list<array{type: string, function: array{name: string, description: string, parameters: array<string, mixed>}}> $tools
+     * @param list<ToolSpec|array{type: string, function: array{name: string, description: string, parameters: array<string, mixed>}}> $tools
      */
     private function runAgentLoop(
         Conversation $conversation,
@@ -200,6 +202,7 @@ final class ChatService implements ChatCapabilitiesInterface
             ));
         }
 
+        $toolSpecs = $this->normaliseToolSpecs($tools);
         $systemPrompt = $this->buildSystemPrompt($conversation);
         $optionsArray = array_filter([
             'system_prompt' => $systemPrompt,
@@ -211,11 +214,10 @@ final class ChatService implements ChatCapabilitiesInterface
             // never persist the expanded result back to DB.
             $messages = $this->buildLlmMessages($conversation->getDecodedMessages(), $provider);
 
-            $response = $this->callToolChatWithRetry($provider, $messages, $tools, $optionsArray);
+            $response = $this->callToolChatWithRetry($provider, $messages, $toolSpecs, $optionsArray);
 
             if ($response->hasToolCalls()) {
-                /** @var array<mixed> $toolCalls */
-                $toolCalls = $response->toolCalls ?? [];
+                $toolCalls = $this->normaliseToolCallsForStorage($response->toolCalls ?? []);
                 // Append assistant + tool messages to the stored (non-expanded) messages
                 $storedMessages = $conversation->getDecodedMessages();
                 $storedMessages[] = [
@@ -276,7 +278,7 @@ final class ChatService implements ChatCapabilitiesInterface
 
     /**
      * @param list<array<string, mixed>> $messages
-     * @param list<array{type: string, function: array{name: string, description: string, parameters: array<string, mixed>}}> $tools
+     * @param list<ToolSpec> $tools
      * @param array<string, mixed> $options
      */
     private function callToolChatWithRetry(
@@ -298,6 +300,39 @@ final class ChatService implements ChatCapabilitiesInterface
             }
         }
         throw $lastException;
+    }
+
+    /**
+     * @param list<ToolSpec|array{type: string, function: array{name: string, description: string, parameters: array<string, mixed>}}> $tools
+     * @return list<ToolSpec>
+     */
+    private function normaliseToolSpecs(array $tools): array
+    {
+        return array_values(array_map(
+            static fn(ToolSpec|array $tool): ToolSpec => $tool instanceof ToolSpec ? $tool : ToolSpec::fromArray($tool),
+            $tools,
+        ));
+    }
+
+    /**
+     * @param array<mixed> $toolCalls
+     * @return list<array<string, mixed>>
+     */
+    private function normaliseToolCallsForStorage(array $toolCalls): array
+    {
+        $normalised = [];
+        foreach ($toolCalls as $call) {
+            if ($call instanceof ToolCall) {
+                $normalised[] = $call->toArray();
+                continue;
+            }
+            if (is_array($call)) {
+                /** @var array<string, mixed> $call */
+                $normalised[] = $call;
+            }
+        }
+
+        return $normalised;
     }
 
     private function isTransientError(Throwable $e): bool
@@ -335,11 +370,15 @@ final class ChatService implements ChatCapabilitiesInterface
     {
         $results = [];
         foreach ($toolCalls as $call) {
-            if (!is_array($call)) {
+            if ($call instanceof ToolCall) {
+                $callData = $call->toArray();
+            } elseif (is_array($call)) {
+                /** @var array<string, mixed> $callData */
+                $callData = $call;
+            } else {
                 continue;
             }
-            /** @var array<string, mixed> $callData */
-            $callData = $call;
+
             /** @var array<string, mixed> $function */
             $function = is_array($callData['function'] ?? null) ? $callData['function'] : [];
             $nameRaw = $function['name'] ?? $callData['name'] ?? '';
