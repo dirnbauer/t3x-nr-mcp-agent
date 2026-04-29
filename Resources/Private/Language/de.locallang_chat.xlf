@@ -85,6 +85,10 @@
                 <source>Select or start a chat</source>
                 <target>Chat auswählen oder neuen starten</target>
             </trans-unit>
+            <trans-unit id="chat.start" resname="chat.start">
+                <source>Start chat</source>
+                <target>Chat starten</target>
+            </trans-unit>
             <trans-unit id="chat.notAvailable" resname="chat.notAvailable">
                 <source>Chat not available. Please contact your administrator.</source>
                 <target>Chat nicht verfügbar. Bitte kontaktiere deinen Administrator.</target>

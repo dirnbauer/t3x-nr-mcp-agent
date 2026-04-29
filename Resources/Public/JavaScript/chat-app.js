@@ -22,8 +22,8 @@ export class ChatApp extends LitElement {
         :host {
             display: flex;
             flex-direction: column;
-            height: min(760px, calc(100dvh - var(--module-docheader-height, 7rem) - 3rem));
-            min-height: 28rem;
+            height: calc(100dvh - (var(--typo3-spacing, 1rem) * 2));
+            min-height: min(28rem, calc(100dvh - (var(--typo3-spacing, 1rem) * 2)));
             border: 1px solid var(--typo3-component-border-color);
             border-radius: var(--typo3-component-border-radius);
             overflow: hidden;
@@ -566,6 +566,9 @@ export class ChatApp extends LitElement {
             background: var(--typo3-surface-container-base);
             box-shadow: var(--typo3-component-box-shadow);
         }
+        .empty-state-action {
+            margin-top: calc(var(--typo3-spacing) * .25);
+        }
 
         .issues-banner {
             padding: 8px 12px;
@@ -779,6 +782,15 @@ export class ChatApp extends LitElement {
                         ? lll('chat.selectOrCreate')
                         : lll('chat.notAvailable')
                     }
+                    ${this.chat.available ? html`
+                        <button class="btn btn-primary btn-sm empty-state-action"
+                            @click=${() => this.chat.handleNewConversation()}
+                            title="${lll('chat.start')}"
+                            aria-label="${lll('chat.start')}">
+                            ${ICON_COMPOSE(14)}
+                            ${lll('chat.start')}
+                        </button>
+                    ` : nothing}
                 </div>
             `;
         }

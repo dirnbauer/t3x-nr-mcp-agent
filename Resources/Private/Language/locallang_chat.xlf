@@ -66,6 +66,9 @@
             <trans-unit id="chat.selectOrCreate" resname="chat.selectOrCreate">
                 <source>Select or start a chat</source>
             </trans-unit>
+            <trans-unit id="chat.start" resname="chat.start">
+                <source>Start chat</source>
+            </trans-unit>
             <trans-unit id="chat.notAvailable" resname="chat.notAvailable">
                 <source>Chat not available. Please contact your administrator.</source>
             </trans-unit>

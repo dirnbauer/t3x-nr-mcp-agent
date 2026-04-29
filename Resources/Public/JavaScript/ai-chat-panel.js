@@ -691,10 +691,15 @@ export class AiChatPanel extends LitElement {
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-direction: column;
+            gap: 8px;
             color: var(--typo3-text-color-variant);
             font-size: 13px;
             text-align: center;
             padding: 16px;
+        }
+        .empty-state-action {
+            margin-top: 2px;
         }
 
         .issues-banner {
@@ -1347,6 +1352,15 @@ export class AiChatPanel extends LitElement {
                         ? lll('chat.selectOrCreate')
                         : lll('chat.notAvailable')
                     }
+                    ${this.chat.available ? html`
+                        <button class="btn btn-primary btn-sm empty-state-action"
+                                @click=${() => this.chat.handleNewConversation()}
+                                title="${lll('chat.start')}"
+                                aria-label="${lll('chat.start')}">
+                            ${ICON_COMPOSE(14)}
+                            ${lll('chat.start')}
+                        </button>
+                    ` : nothing}
                 </div>
             `;
         }
