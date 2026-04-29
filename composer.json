@@ -103,7 +103,7 @@
             "@ci:cgl",
             "@ci:tests"
         ],
-        "ci:phpstan": ".Build/bin/phpstan analyse -c Build/phpstan/phpstan.neon --no-progress",
+        "ci:phpstan": ".Build/bin/phpstan analyse -c Build/phpstan/phpstan.neon --no-progress --memory-limit=1G",
         "ci:cgl": ".Build/bin/php-cs-fixer fix --dry-run --diff",
         "ci:tests": ".Build/bin/phpunit -c Build/phpunit.xml",
         "ci:tests:unit": ".Build/bin/phpunit -c Build/phpunit.xml --testsuite unit",
