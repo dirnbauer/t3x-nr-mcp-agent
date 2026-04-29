@@ -5,15 +5,27 @@ import {lll} from '@typo3/core/lit-helper.js';
 import {ChatCoreController} from './chat-core.js';
 import {markdownStyles} from './markdown-styles.js';
 import {AVATAR_ASSISTANT, AVATAR_USER, ICON_PAPERCLIP, ICON_SEND, ICON_COMPOSE, ICON_MINIMIZE, ICON_MAXIMIZE, ICON_RESTORE, ICON_CLOSE, ICON_CHEVRON_DOWN, ICON_UPLOAD, ICON_HISTORY, ICON_PIN, ICON_ARCHIVE} from './icons.js';
+import '@typo3/backend/element/spinner-element.js';
 
 const STATES = {HIDDEN: 'hidden', COLLAPSED: 'collapsed', EXPANDED: 'expanded', MAXIMIZED: 'maximized'};
 const STATUS_ICONS = {idle: '✓', processing: '⟳', tool_loop: '⚙', locked: '⊘', failed: '✕'};
+const STATUS_BADGE_VARIANTS = {
+    idle: 'badge-success',
+    processing: 'badge-warning',
+    tool_loop: 'badge-warning',
+    locked: 'badge-warning',
+    failed: 'badge-danger',
+};
 const DEFAULT_HEIGHT = 390;
 const DEFAULT_WIDTH = 480;
 const MIN_WIDTH = 320;
 const MIN_HEIGHT = 220;
 const COLLAPSED_HEIGHT = 40;
 const STORAGE_KEY = 'ai-chat-panel';
+
+function statusBadgeClasses(status) {
+    return `status-badge badge badge-pill ${STATUS_BADGE_VARIANTS[status] ?? 'badge-default'} status-${status}`;
+}
 
 /**
  * <ai-chat-panel> - Floating draggable panel for AI chat.
@@ -179,15 +191,18 @@ export class AiChatPanel extends LitElement {
         .sidebar-list {
             flex: 1;
             overflow-y: auto;
-            padding: 4px 0;
+            padding: 4px;
         }
         .sidebar-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 9px 12px;
+            gap: 6px;
+            min-height: 30px;
+            padding: 4px 8px;
+            margin-block-end: 1px;
             cursor: pointer;
-            border-bottom: 1px solid var(--typo3-component-border-color);
+            border: 1px solid transparent;
+            border-radius: var(--typo3-component-border-radius);
             transition: background 0.15s;
             font-size: 13px;
         }
@@ -207,6 +222,11 @@ export class AiChatPanel extends LitElement {
             display: inline-flex;
             align-items: center;
             gap: 4px;
+            min-width: 0;
+            overflow: hidden;
+        }
+        .sidebar-item .item-label {
+            min-width: 0;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -674,17 +694,39 @@ export class AiChatPanel extends LitElement {
 
         /* Status */
         .status-badge {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 12px;
-            line-height: 1.4;
+            --typo3-badge-color: var(--typo3-badge-default-color);
+            --typo3-badge-bg: var(--typo3-badge-default-bg);
+            --typo3-badge-border-color: var(--typo3-badge-default-border-color);
+            display: inline-flex;
+            align-items: center;
+            flex-shrink: 0;
+            padding: calc(0.25em - 1px) .5em;
+            border: 1px solid var(--typo3-badge-border-color);
+            border-radius: 1em;
+            background-color: var(--typo3-badge-bg);
+            color: var(--typo3-badge-color);
+            font-size: .78em;
+            font-weight: 600;
+            line-height: 1;
+            letter-spacing: 0;
+            white-space: nowrap;
+            vertical-align: middle;
         }
-        .status-idle { background: var(--typo3-surface-container-success); color: var(--typo3-surface-container-success-text); }
-        .status-processing, .status-locked, .status-tool_loop {
-            background: var(--typo3-surface-container-warning); color: var(--typo3-surface-container-warning-text);
+        .status-badge.badge-success {
+            --typo3-badge-color: var(--typo3-badge-success-color, var(--typo3-state-success-color));
+            --typo3-badge-bg: var(--typo3-badge-success-bg, var(--typo3-state-success-bg));
+            --typo3-badge-border-color: var(--typo3-badge-success-border-color, var(--typo3-state-success-border-color));
         }
-        .status-failed { background: var(--typo3-surface-container-danger); color: var(--typo3-surface-container-danger-text); }
+        .status-badge.badge-warning {
+            --typo3-badge-color: var(--typo3-badge-warning-color, var(--typo3-state-warning-color));
+            --typo3-badge-bg: var(--typo3-badge-warning-bg, var(--typo3-state-warning-bg));
+            --typo3-badge-border-color: var(--typo3-badge-warning-border-color, var(--typo3-state-warning-border-color));
+        }
+        .status-badge.badge-danger {
+            --typo3-badge-color: var(--typo3-badge-danger-color, var(--typo3-state-danger-color));
+            --typo3-badge-bg: var(--typo3-badge-danger-bg, var(--typo3-state-danger-bg));
+            --typo3-badge-border-color: var(--typo3-badge-danger-border-color, var(--typo3-state-danger-border-color));
+        }
 
         .empty-state {
             flex: 1;
@@ -711,16 +753,14 @@ export class AiChatPanel extends LitElement {
             flex-shrink: 0;
         }
 
-        .spinner {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border: 2px solid color-mix(in srgb, currentColor, transparent 85%);
-            border-top-color: var(--typo3-state-primary-bg);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+        .chat-spinner {
+            display: inline-flex;
+            color: var(--typo3-text-color-primary, var(--typo3-state-primary-color));
+            line-height: 1;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .btn-send .chat-spinner {
+            color: var(--typo3-state-primary-color);
+        }
     `];
 
     constructor() {
@@ -1154,7 +1194,7 @@ export class AiChatPanel extends LitElement {
                 <div class="panel-title-group">
                     <span class="title">${title}</span>
                     ${this.chat.status ? html`
-                        <span class="status-badge status-${this.chat.status}" title="${this.chat.status}">${STATUS_ICONS[this.chat.status] ?? this.chat.status}</span>
+                        <span class=${statusBadgeClasses(this.chat.status)} title="${this.chat.status}">${STATUS_ICONS[this.chat.status] ?? this.chat.status}</span>
                     ` : nothing}
                 </div>
                 <div class="panel-actions" role="group" aria-label="${lll('panel.windowActions') || 'Window actions'}">
@@ -1174,7 +1214,7 @@ export class AiChatPanel extends LitElement {
 
     _renderBody() {
         if (this.chat.loading) {
-            return html`<div class="panel-body"><div class="empty-state"><span class="spinner"></span></div></div>`;
+            return html`<div class="panel-body"><div class="empty-state"><typo3-backend-spinner class="chat-spinner" size="small"></typo3-backend-spinner></div></div>`;
         }
 
         return html`
@@ -1230,9 +1270,9 @@ export class AiChatPanel extends LitElement {
                 }}>
                 <span class="item-title">
                     ${c.pinned ? html`<span class="pinned-icon" aria-hidden="true">${ICON_PIN(12)}</span>` : nothing}
-                    <span>${c.title || lll('conversations.newConversation')}</span>
+                    <span class="item-label">${c.title || lll('conversations.newConversation')}</span>
+                    <span class=${statusBadgeClasses(c.status)} title="${c.status}">${c.status}</span>
                 </span>
-                <span class="status-badge status-${c.status}" title="${c.status}">${STATUS_ICONS[c.status] ?? c.status}</span>
                 ${isActive ? html`
                     <span class="sidebar-item-actions">
                         <button class="btn-icon btn-sm" @click=${(e) => { e.stopPropagation(); this.chat.handleTogglePin(); }}
@@ -1536,7 +1576,7 @@ export class AiChatPanel extends LitElement {
                             aria-label="${lll('chat.send')}"
                             title="${lll('chat.send')}"
                             ?disabled=${!this.chat.canSend()}>
-                        ${this.chat.sending ? html`<span class="spinner" style="width:14px;height:14px;border-width:2px;"></span>` : ICON_SEND(16)}
+                        ${this.chat.sending ? html`<typo3-backend-spinner class="chat-spinner" size="small"></typo3-backend-spinner>` : ICON_SEND(16)}
                     </button>
                 </div>
             </div>

@@ -4,6 +4,19 @@ import {lll} from '@typo3/core/lit-helper.js';
 import {ChatCoreController} from './chat-core.js';
 import {markdownStyles} from './markdown-styles.js';
 import {AVATAR_ASSISTANT, AVATAR_USER, ICON_PAPERCLIP, ICON_SEND, ICON_COMPOSE, ICON_CHEVRON_DOWN, ICON_UPLOAD, ICON_HISTORY, ICON_MENU, ICON_PANEL_LEFT_CLOSE, ICON_PIN, ICON_ARCHIVE} from './icons.js';
+import '@typo3/backend/element/spinner-element.js';
+
+const STATUS_BADGE_VARIANTS = {
+    idle: 'badge-success',
+    processing: 'badge-warning',
+    tool_loop: 'badge-warning',
+    locked: 'badge-warning',
+    failed: 'badge-danger',
+};
+
+function statusBadgeClasses(status) {
+    return `status-badge badge badge-pill ${STATUS_BADGE_VARIANTS[status] ?? 'badge-default'} status-${status}`;
+}
 
 /**
  * <nr-chat-app> – Main chat application component.
@@ -94,16 +107,15 @@ export class ChatApp extends LitElement {
         .conversation-list {
             flex: 1;
             overflow-y: auto;
-            padding: calc(var(--typo3-spacing) * .5);
+            padding: calc(var(--typo3-spacing) * .35);
             scrollbar-gutter: stable;
         }
         .conversation-item {
             display: flex;
             align-items: center;
-            gap: calc(var(--typo3-spacing) * .5);
-            min-height: 42px;
-            padding: calc(var(--typo3-spacing) * .55) calc(var(--typo3-spacing) * .625);
-            margin-block-end: 2px;
+            min-height: 32px;
+            padding: calc(var(--typo3-spacing) * .3125) calc(var(--typo3-spacing) * .5);
+            margin-block-end: 1px;
             cursor: pointer;
             border: 1px solid transparent;
             border-radius: var(--typo3-component-border-radius);
@@ -128,15 +140,14 @@ export class ChatApp extends LitElement {
             flex: 1;
             display: inline-flex;
             align-items: center;
-            gap: calc(var(--typo3-spacing) * .35);
+            gap: calc(var(--typo3-spacing) * .25);
             min-width: 0;
             overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
             font-size: 13px;
             font-weight: 500;
         }
-        .conversation-item .title span:last-child {
+        .conversation-item .conversation-label {
+            min-width: 0;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -146,11 +157,6 @@ export class ChatApp extends LitElement {
             flex-shrink: 0;
             color: var(--typo3-text-color-warning);
         }
-        .conversation-item .meta {
-            font-size: 11px;
-            color: var(--typo3-text-color-variant);
-        }
-
         /* Main area */
         .main {
             flex: 1;
@@ -524,22 +530,39 @@ export class ChatApp extends LitElement {
 
         /* Status indicators */
         .status-badge {
+            --typo3-badge-color: var(--typo3-badge-default-color);
+            --typo3-badge-bg: var(--typo3-badge-default-bg);
+            --typo3-badge-border-color: var(--typo3-badge-default-border-color);
             display: inline-flex;
             align-items: center;
-            min-height: 18px;
-            padding: 2px 7px;
-            border-radius: 3px;
-            font-size: 11px;
+            flex-shrink: 0;
+            padding: calc(0.25em - 1px) .5em;
+            border: 1px solid var(--typo3-badge-border-color);
+            border-radius: 1em;
+            background-color: var(--typo3-badge-bg);
+            color: var(--typo3-badge-color);
+            font-size: .78em;
             font-weight: 600;
             line-height: 1;
-            text-transform: uppercase;
             letter-spacing: 0;
+            white-space: nowrap;
+            vertical-align: middle;
         }
-        .status-idle { background: var(--typo3-surface-container-success); color: var(--typo3-surface-container-success-text); }
-        .status-processing, .status-locked, .status-tool_loop {
-            background: var(--typo3-surface-container-warning); color: var(--typo3-surface-container-warning-text);
+        .status-badge.badge-success {
+            --typo3-badge-color: var(--typo3-badge-success-color, var(--typo3-state-success-color));
+            --typo3-badge-bg: var(--typo3-badge-success-bg, var(--typo3-state-success-bg));
+            --typo3-badge-border-color: var(--typo3-badge-success-border-color, var(--typo3-state-success-border-color));
         }
-        .status-failed { background: var(--typo3-surface-container-danger); color: var(--typo3-surface-container-danger-text); }
+        .status-badge.badge-warning {
+            --typo3-badge-color: var(--typo3-badge-warning-color, var(--typo3-state-warning-color));
+            --typo3-badge-bg: var(--typo3-badge-warning-bg, var(--typo3-state-warning-bg));
+            --typo3-badge-border-color: var(--typo3-badge-warning-border-color, var(--typo3-state-warning-border-color));
+        }
+        .status-badge.badge-danger {
+            --typo3-badge-color: var(--typo3-badge-danger-color, var(--typo3-state-danger-color));
+            --typo3-badge-bg: var(--typo3-badge-danger-bg, var(--typo3-state-danger-bg));
+            --typo3-badge-border-color: var(--typo3-badge-danger-border-color, var(--typo3-state-danger-border-color));
+        }
 
         .empty-state {
             flex: 1;
@@ -578,16 +601,14 @@ export class ChatApp extends LitElement {
             color: var(--typo3-surface-container-warning-text);
         }
 
-        .spinner {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid color-mix(in srgb, currentColor, transparent 85%);
-            border-top-color: var(--typo3-state-primary-bg);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+        .chat-spinner {
+            display: inline-flex;
+            color: var(--typo3-text-color-primary, var(--typo3-state-primary-color));
+            line-height: 1;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .btn-send .chat-spinner {
+            color: var(--typo3-state-primary-color);
+        }
 
         /* Typing indicator — animated dots */
         .typing-indicator {
@@ -695,7 +716,7 @@ export class ChatApp extends LitElement {
 
     render() {
         if (this.chat.loading) {
-            return html`<div class="empty-state"><span class="spinner"></span></div>`;
+            return html`<div class="empty-state"><typo3-backend-spinner class="chat-spinner" size="small"></typo3-backend-spinner></div>`;
         }
 
         return html`
@@ -750,10 +771,8 @@ export class ChatApp extends LitElement {
                  @keydown=${(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.chat.selectConversation(c.uid); } }}>
                 <div class="title">
                     ${c.pinned ? html`<span class="pinned-icon" aria-hidden="true">${ICON_PIN(12)}</span>` : nothing}
-                    <span>${c.title || lll('conversations.newConversation')}</span>
-                </div>
-                <div class="meta">
-                    <span class="status-badge status-${c.status}">${c.status}</span>
+                    <span class="conversation-label">${c.title || lll('conversations.newConversation')}</span>
+                    <span class=${statusBadgeClasses(c.status)}>${c.status}</span>
                 </div>
             </div>
         `;
@@ -807,7 +826,7 @@ export class ChatApp extends LitElement {
                     <div class="main-title-copy">
                         <strong class="main-title-name">${conv?.title || lll('conversations.newConversation')}</strong>
                         <span class="main-title-meta">
-                            <span class="status-badge status-${status}">${status}</span>
+                            <span class=${statusBadgeClasses(status)}>${status}</span>
                         </span>
                     </div>
                 </div>
@@ -868,7 +887,7 @@ export class ChatApp extends LitElement {
                         aria-label="${lll('chat.send')}"
                         title="${lll('chat.send')}"
                         ?disabled=${!this.chat.canSend()}>
-                        ${this.chat.sending ? html`<span class="spinner" style="width:14px;height:14px;border-width:2px;"></span>` : ICON_SEND(16)}
+                        ${this.chat.sending ? html`<typo3-backend-spinner class="chat-spinner" size="small"></typo3-backend-spinner>` : ICON_SEND(16)}
                     </button>
                 </div>
             </div>
