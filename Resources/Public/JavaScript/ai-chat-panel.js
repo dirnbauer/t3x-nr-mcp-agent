@@ -113,13 +113,15 @@ export class AiChatPanel extends LitElement {
 
         /* Panel header - drag handle */
         .panel-header {
-            height: 40px;
-            min-height: 40px;
+            height: 46px;
+            min-height: 46px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 0 12px;
-            background: var(--typo3-surface-container-low);
+            gap: 10px;
+            padding: 0 10px 0 12px;
+            background:
+                linear-gradient(90deg, color-mix(in srgb, var(--typo3-state-primary-bg), transparent 82%), transparent 46%),
+                var(--typo3-surface-container-low);
             border-bottom: 1px solid var(--typo3-component-border-color);
             cursor: grab;
             flex-shrink: 0;
@@ -141,16 +143,31 @@ export class AiChatPanel extends LitElement {
             align-items: center;
             gap: 8px;
         }
+        .panel-mark {
+            width: 28px;
+            height: 28px;
+            flex: 0 0 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid color-mix(in srgb, var(--typo3-state-primary-border-color), transparent 28%);
+            border-radius: var(--typo3-component-border-radius);
+            color: var(--typo3-surface-container-primary-text, var(--typo3-state-primary-color));
+            background: var(--typo3-surface-container-primary, var(--typo3-state-primary-bg));
+            box-shadow: inset 0 1px 0 color-mix(in srgb, #fff, transparent 76%);
+        }
         .panel-header .title {
             min-width: 0;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            font-size: 13.5px;
-            font-weight: 600;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0;
         }
         .panel-title-group .status-badge {
             flex-shrink: 0;
+            min-width: 2rem;
         }
         .panel-actions {
             display: flex;
@@ -181,25 +198,30 @@ export class AiChatPanel extends LitElement {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 8px 12px;
+            gap: 8px;
+            padding: 8px 10px 8px 12px;
             border-bottom: 1px solid var(--typo3-component-border-color);
+            background: var(--typo3-surface-container-base);
         }
         .panel-sidebar-header h3 {
             margin: 0;
             font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0;
         }
         .sidebar-list {
             flex: 1;
             overflow-y: auto;
-            padding: 4px;
+            padding: 6px;
         }
         .sidebar-item {
-            display: flex;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 74px 64px;
             align-items: center;
             gap: 6px;
-            min-height: 30px;
-            padding: 4px 8px;
-            margin-block-end: 1px;
+            min-height: 34px;
+            padding: 5px 7px;
+            margin-block-end: 2px;
             cursor: pointer;
             border: 1px solid transparent;
             border-radius: var(--typo3-component-border-radius);
@@ -218,7 +240,6 @@ export class AiChatPanel extends LitElement {
             background: var(--typo3-component-active-bg);
         }
         .sidebar-item .item-title {
-            flex: 1;
             display: inline-flex;
             align-items: center;
             gap: 4px;
@@ -231,6 +252,9 @@ export class AiChatPanel extends LitElement {
             text-overflow: ellipsis;
             white-space: nowrap;
         }
+        .sidebar-item > .status-badge {
+            justify-self: end;
+        }
         .pinned-icon {
             display: inline-flex;
             flex-shrink: 0;
@@ -239,6 +263,8 @@ export class AiChatPanel extends LitElement {
         .sidebar-item-actions {
             display: flex;
             gap: 2px;
+            justify-self: end;
+            min-width: 64px;
         }
 
         /* Content area */
@@ -699,7 +725,9 @@ export class AiChatPanel extends LitElement {
             --typo3-badge-border-color: var(--typo3-badge-default-border-color);
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             flex-shrink: 0;
+            min-width: 3.5em;
             padding: calc(0.25em - 1px) .5em;
             border: 1px solid var(--typo3-badge-border-color);
             border-radius: 1em;
@@ -1192,6 +1220,7 @@ export class AiChatPanel extends LitElement {
                  @click=${(e) => this._onHeaderClick(e)}
                  @dblclick=${(e) => this._onHeaderDblClick(e)}>
                 <div class="panel-title-group">
+                    <span class="panel-mark" aria-hidden="true">${AVATAR_ASSISTANT(16)}</span>
                     <span class="title">${title}</span>
                     ${this.chat.status ? html`
                         <span class=${statusBadgeClasses(this.chat.status)} title="${this.chat.status}">${STATUS_ICONS[this.chat.status] ?? this.chat.status}</span>
@@ -1271,8 +1300,8 @@ export class AiChatPanel extends LitElement {
                 <span class="item-title">
                     ${c.pinned ? html`<span class="pinned-icon" aria-hidden="true">${ICON_PIN(12)}</span>` : nothing}
                     <span class="item-label">${c.title || lll('conversations.newConversation')}</span>
-                    <span class=${statusBadgeClasses(c.status)} title="${c.status}">${c.status}</span>
                 </span>
+                <span class=${statusBadgeClasses(c.status)} title="${c.status}">${c.status}</span>
                 ${isActive ? html`
                     <span class="sidebar-item-actions">
                         <button class="btn-icon btn-sm" @click=${(e) => { e.stopPropagation(); this.chat.handleTogglePin(); }}
@@ -1285,7 +1314,7 @@ export class AiChatPanel extends LitElement {
                             ${ICON_ARCHIVE(16)}
                         </button>
                     </span>
-                ` : nothing}
+                ` : html`<span class="sidebar-item-actions" aria-hidden="true"></span>`}
             </div>
         `;
     }

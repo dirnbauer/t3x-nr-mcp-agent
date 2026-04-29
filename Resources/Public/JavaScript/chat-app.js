@@ -111,8 +111,10 @@ export class ChatApp extends LitElement {
             scrollbar-gutter: stable;
         }
         .conversation-item {
-            display: flex;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 74px;
             align-items: center;
+            gap: calc(var(--typo3-spacing) * .375);
             min-height: 32px;
             padding: calc(var(--typo3-spacing) * .3125) calc(var(--typo3-spacing) * .5);
             margin-block-end: 1px;
@@ -137,7 +139,6 @@ export class ChatApp extends LitElement {
             box-shadow: inset 3px 0 0 var(--typo3-state-primary-border-color);
         }
         .conversation-item .title {
-            flex: 1;
             display: inline-flex;
             align-items: center;
             gap: calc(var(--typo3-spacing) * .25);
@@ -145,6 +146,9 @@ export class ChatApp extends LitElement {
             overflow: hidden;
             font-size: 13px;
             font-weight: 500;
+        }
+        .conversation-item > .status-badge {
+            justify-self: end;
         }
         .conversation-item .conversation-label {
             min-width: 0;
@@ -535,7 +539,9 @@ export class ChatApp extends LitElement {
             --typo3-badge-border-color: var(--typo3-badge-default-border-color);
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             flex-shrink: 0;
+            min-width: 3.5em;
             padding: calc(0.25em - 1px) .5em;
             border: 1px solid var(--typo3-badge-border-color);
             border-radius: 1em;
@@ -772,8 +778,8 @@ export class ChatApp extends LitElement {
                 <div class="title">
                     ${c.pinned ? html`<span class="pinned-icon" aria-hidden="true">${ICON_PIN(12)}</span>` : nothing}
                     <span class="conversation-label">${c.title || lll('conversations.newConversation')}</span>
-                    <span class=${statusBadgeClasses(c.status)}>${c.status}</span>
                 </div>
+                <span class=${statusBadgeClasses(c.status)}>${c.status}</span>
             </div>
         `;
     }

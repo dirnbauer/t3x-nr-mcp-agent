@@ -1,4 +1,15 @@
 /* Keep the module aligned with TYPO3 backend spacing tokens. */
+.module[data-module-id="nr_mcp_agent_chat"],
+.module[data-module-name="nr_mcp_agent_chat"] {
+    --module-bg: var(--typo3-surface-container-lowest);
+    --module-docheader-bg: var(--typo3-surface-container-low);
+}
+
+.module[data-module-id="nr_mcp_agent_chat"] .module-docheader-navigation,
+.module[data-module-name="nr_mcp_agent_chat"] .module-docheader-navigation {
+    border-bottom-color: var(--typo3-component-border-color);
+}
+
 .module[data-module-name="nr_mcp_agent_chat"] .module-body {
     padding: var(--module-body-padding);
 }
