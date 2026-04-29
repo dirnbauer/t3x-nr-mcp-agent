@@ -114,8 +114,12 @@ describe('_openFalPicker', () => {
         expect(ctrl._falPickerOverlay).not.toBeNull();
         const iframe = ctrl._falPickerOverlay.querySelector('iframe.t3js-modal-iframe');
         expect(iframe).not.toBeNull();
-        expect(iframe.src).toContain('mode=file');
-        expect(iframe.src).toContain('bparams=');
+        const url = new URL(iframe.src);
+        expect(url.searchParams.get('mode')).toBe('file');
+        expect(url.searchParams.get('fieldReference')).toBe('nr_mcp_agent_fal_picker');
+        expect(url.searchParams.get('allowedTypes')).toBe('pdf,docx');
+        expect(url.searchParams.get('useEvents')).toBe('1');
+        expect(url.searchParams.has('bparams')).toBe(false);
         expect(document.body.contains(ctrl._falPickerOverlay)).toBe(true);
     });
 
@@ -135,6 +139,30 @@ describe('_openFalPicker', () => {
         // jsdom doesn't set event.target from constructor; simulate by calling cleanup
         ctrl._cleanupFalPicker();
 
+        expect(ctrl._falPickerListener).toBeNull();
+        expect(ctrl._falPickerOverlay).toBeNull();
+    });
+
+    test('custom Element Browser event invokes _onFalFileSelected with parsed numeric uid', () => {
+        global.TYPO3 = {settings: {Wizards: {elementBrowserUrl: '/typo3/wizard/browse?token=x'}}};
+
+        const host = makeHost();
+        const ctrl = makeController(host);
+        ctrl._onFalFileSelected = jest.fn();
+        ctrl._openFalPicker();
+
+        const iframe = ctrl._falPickerOverlay.querySelector('iframe.t3js-modal-iframe');
+        iframe.dispatchEvent(new CustomEvent('typo3:element-browser:message', {
+            bubbles: true,
+            detail: {
+                actionName: 'typo3:elementBrowser:elementAdded',
+                fieldName: 'nr_mcp_agent_fal_picker',
+                value: 'sys_file_42',
+                label: 'doc.pdf',
+            },
+        }));
+
+        expect(ctrl._onFalFileSelected).toHaveBeenCalledWith(42);
         expect(ctrl._falPickerListener).toBeNull();
         expect(ctrl._falPickerOverlay).toBeNull();
     });

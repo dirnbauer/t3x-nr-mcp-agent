@@ -904,6 +904,30 @@ class ChatApiControllerTest extends TestCase
     }
 
     #[Test]
+    public function sendMessageWithOnlyFileUidStoresFallbackContent(): void
+    {
+        $conversation = new Conversation();
+        $this->repository->method('findOneByUidAndBeUser')->willReturn($conversation);
+        $this->repository->method('countActiveByBeUser')->willReturn(0);
+
+        $mockFile = $this->createMock(File::class);
+        $mockFile->method('checkActionPermission')->with('read')->willReturn(true);
+        $mockFile->method('getName')->willReturn('report.pdf');
+        $mockFile->method('getMimeType')->willReturn('application/pdf');
+        $this->resourceFactory->method('getFileObject')->with(42)->willReturn($mockFile);
+
+        $request = $this->createRequest('POST', '{"conversationUid": 1, "content": "", "fileUid": 42}');
+        $response = $this->subject->sendMessage($request);
+
+        self::assertSame(202, $response->getStatusCode());
+        $messages = $conversation->getDecodedMessages();
+        self::assertCount(1, $messages);
+        self::assertSame('Please analyze the attached file "report.pdf".', $messages[0]['content']);
+        self::assertSame(42, $messages[0]['fileUid']);
+        self::assertSame('report.pdf', $conversation->getTitle());
+    }
+
+    #[Test]
     public function sendMessageRejects404WhenFileIsNotReadable(): void
     {
         $conversation = new Conversation();

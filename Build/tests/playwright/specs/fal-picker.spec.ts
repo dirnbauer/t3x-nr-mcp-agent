@@ -10,11 +10,15 @@ const TYPO3_PASSWORD = process.env.TYPO3_ADMIN_PASSWORD || 'Joh316!!';
 async function login(page: Page): Promise<void> {
     await page.goto('/typo3/');
     const loginForm = page.locator('#t3-login-form, form[name="loginform"]');
+    const usernamePasswordSwitch = page.getByRole('link', { name: /username and password/i });
+    if (await usernamePasswordSwitch.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await usernamePasswordSwitch.click();
+    }
     if (await loginForm.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await page.getByLabel('Username').fill(TYPO3_USER);
-        await page.getByLabel('Password').fill(TYPO3_PASSWORD);
+        await page.locator('input[name="username"], input[name="user"], input[type="email"]').first().fill(TYPO3_USER);
+        await page.locator('input[type="password"]').first().fill(TYPO3_PASSWORD);
         await page.getByRole('button', { name: /log.?in/i }).click();
-        await expect(page.locator('.scaffold-modulemenu')).toBeVisible({ timeout: 15000 });
+        await page.waitForURL('**/typo3/module/**', { timeout: 15000 });
     }
 }
 
@@ -87,11 +91,13 @@ test.describe('FAL picker overlay', () => {
         const iframe = overlay.locator('iframe.t3js-modal-iframe');
         await expect(iframe).toBeVisible();
 
-        // iframe src must include mode=file and our bparams
+        // iframe src must use TYPO3's current Element Browser parameters.
         const src = await iframe.getAttribute('src') ?? '';
         expect(src).toContain('mode=file');
-        expect(src).toContain('bparams=');
-        expect(decodeURIComponent(src)).toContain('nr_mcp_agent_fal_picker');
+        expect(src).toContain('fieldReference=nr_mcp_agent_fal_picker');
+        expect(src).toContain('allowedTypes=');
+        expect(src).toContain('useEvents=1');
+        expect(src).not.toContain('bparams=');
     });
 
     test('overlay has correct ARIA attributes (role=dialog, aria-modal=true)', async ({ page }) => {
@@ -123,7 +129,31 @@ test.describe('FAL picker overlay', () => {
         await expect(overlays).toHaveCount(1, { timeout: 3000 });
     });
 
-    // ── 2. postMessage handling — the core of our fix ─────────────────────
+    // ── 2. Element Browser event handling — the core of our fix ───────────
+
+    test('typo3:element-browser:message closes the overlay', async ({ page }) => {
+        await openFalPicker(page);
+
+        const overlay = await getOverlay(page);
+        await expect(overlay).toBeVisible({ timeout: 3000 });
+
+        await page.evaluate(() => {
+            const iframe = document.querySelector('body > [aria-modal] iframe.t3js-modal-iframe');
+            iframe?.dispatchEvent(
+                new CustomEvent('typo3:element-browser:message', {
+                    bubbles: true,
+                    detail: {
+                        actionName: 'typo3:elementBrowser:elementAdded',
+                        fieldName: 'nr_mcp_agent_fal_picker',
+                        value: 'sys_file_1',
+                        label: 'test.pdf',
+                    },
+                }),
+            );
+        });
+
+        await expect(overlay).not.toBeVisible({ timeout: 3000 });
+    });
 
     test('postMessage typo3:elementBrowser:elementAdded closes the overlay', async ({ page }) => {
         await openFalPicker(page);

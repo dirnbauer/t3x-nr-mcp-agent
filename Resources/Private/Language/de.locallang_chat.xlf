@@ -161,6 +161,10 @@
                 <source>File no longer available</source>
                 <target>Datei nicht mehr verfügbar</target>
             </trans-unit>
+            <trans-unit id="attachment.defaultMessage" resname="attachment.defaultMessage">
+                <source>Please analyze the attached file "%s".</source>
+                <target>Bitte analysiere die angehängte Datei "%s".</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

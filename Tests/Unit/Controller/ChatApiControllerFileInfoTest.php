@@ -156,4 +156,45 @@ class ChatApiControllerFileInfoTest extends TestCase
         self::assertSame('application/pdf', $body['mimeType']);
         self::assertSame(102400, $body['size']);
     }
+
+    #[Test]
+    public function fileInfoAllowsProviderSupportedImageExtension(): void
+    {
+        $config = $this->createMock(ExtensionConfiguration::class);
+        $config->method('getAllowedGroupIds')->willReturn([]);
+
+        $chatService = $this->createMock(ChatCapabilitiesInterface::class);
+        $chatService->method('getProviderCapabilities')->willReturn([
+            'visionSupported' => true,
+            'maxFileSize' => 20971520,
+            'supportedFormats' => ['png', 'jpg'],
+        ]);
+
+        $subject = new ChatApiController(
+            $this->createMock(ConversationRepository::class),
+            $this->createMock(ChatProcessorInterface::class),
+            $config,
+            $chatService,
+            $this->resourceFactory,
+            $this->createMock(StorageRepository::class),
+            new DocumentExtractorRegistry([]),
+        );
+
+        $file = $this->createMock(File::class);
+        $file->method('checkActionPermission')->with('read')->willReturn(true);
+        $file->method('getExtension')->willReturn('PNG');
+        $file->method('getUid')->willReturn(43);
+        $file->method('getName')->willReturn('photo.png');
+        $file->method('getMimeType')->willReturn('image/png');
+        $file->method('getSize')->willReturn(2048);
+
+        $this->resourceFactory->method('getFileObject')->willReturn($file);
+
+        $response = $subject->fileInfo($this->makeRequest(['fileUid' => '43']));
+        self::assertSame(200, $response->getStatusCode());
+
+        $body = json_decode((string) $response->getBody(), true);
+        self::assertSame(43, $body['fileUid']);
+        self::assertSame('photo.png', $body['name']);
+    }
 }

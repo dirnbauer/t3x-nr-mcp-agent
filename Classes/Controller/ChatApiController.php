@@ -28,6 +28,16 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 final readonly class ChatApiController
 {
+    private const ATTACHMENT_ONLY_PROMPT = 'Please analyze the attached file "%s".';
+    private const EXTENSION_MIME_MAP = [
+        'png'  => 'image/png',
+        'jpg'  => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'gif'  => 'image/gif',
+        'webp' => 'image/webp',
+        'pdf'  => 'application/pdf',
+    ];
+
     public function __construct(
         private ConversationRepository $repository,
         private ChatProcessorInterface $processor,
@@ -170,8 +180,12 @@ final readonly class ChatApiController
         }
 
         $content = trim((string) ($body['content'] ?? ''));
+        $fileUid = isset($body['fileUid']) ? (int) $body['fileUid'] : null;
+        if ($fileUid !== null && $fileUid <= 0) {
+            $fileUid = null;
+        }
 
-        if ($content === '') {
+        if ($content === '' && $fileUid === null) {
             return new JsonResponse(['error' => 'Empty message'], 400);
         }
 
@@ -180,9 +194,9 @@ final readonly class ChatApiController
             return new JsonResponse(['error' => sprintf('Message too long (max %d characters)', $maxLength)], 400);
         }
 
-        $fileUid = isset($body['fileUid']) ? (int) $body['fileUid'] : null;
         $fileName = null;
         $fileMimeType = null;
+        $attachmentOnly = $content === '';
 
         if ($fileUid !== null) {
             $existingFileCount = $this->countFilesInConversation($conversation);
@@ -199,6 +213,10 @@ final readonly class ChatApiController
                 $fileMimeType = $file->getMimeType();
             } catch (Exception) {
                 return new JsonResponse(['error' => 'File not found'], 404);
+            }
+
+            if ($content === '') {
+                $content = sprintf(self::ATTACHMENT_ONLY_PROMPT, $fileName ?: 'file');
             }
         }
 
@@ -228,7 +246,7 @@ final readonly class ChatApiController
             ];
             $conversation->setMessages($messages);
             if ($conversation->getTitle() === '') {
-                $conversation->setTitle($content);
+                $conversation->setTitle($attachmentOnly && $fileName !== null ? $fileName : $content);
             }
         } else {
             $conversation->appendMessage(MessageRole::User, $content);
@@ -267,26 +285,7 @@ final readonly class ChatApiController
             return new JsonResponse(['error' => 'No file uploaded'], 400);
         }
 
-        $capabilities = $this->chatService->getProviderCapabilities();
-        // $capabilities['supportedFormats'] contains file extensions (e.g. 'png', 'jpg') because
-        // the frontend uses them for the <input accept> filter.  finfo returns MIME types, so we
-        // map extensions to MIME types before comparing.
-        $extensionMimeMap = [
-            'png'  => 'image/png',
-            'jpg'  => 'image/jpeg',
-            'jpeg' => 'image/jpeg',
-            'gif'  => 'image/gif',
-            'webp' => 'image/webp',
-            'pdf'  => 'application/pdf',
-        ];
-        $providerMimeTypes = array_values(array_filter(array_map(
-            static fn(string $ext): ?string => $extensionMimeMap[$ext] ?? null,
-            $capabilities['supportedFormats'],
-        )));
-        $allowedMimeTypes = array_values(array_unique(array_merge(
-            $providerMimeTypes,
-            $this->documentExtractorRegistry->getAvailableMimeTypes(),
-        )));
+        $allowedMimeTypes = $this->getAllowedAttachmentMimeTypes();
 
         $maxSize = 20 * 1024 * 1024; // 20 MB
         if ($file->getSize() > $maxSize) {
@@ -362,7 +361,7 @@ final readonly class ChatApiController
             return new JsonResponse(['error' => 'Access denied'], 403);
         }
 
-        if (!in_array($file->getExtension(), $this->documentExtractorRegistry->getAvailableExtensions(), true)) {
+        if (!in_array(strtolower($file->getExtension()), $this->getAllowedAttachmentExtensions(), true)) {
             return new JsonResponse(['error' => 'Unsupported file type'], 422);
         }
 
@@ -551,6 +550,40 @@ final readonly class ChatApiController
             return $storage->createFolder($basePath);
         }
         return $storage->getFolder($basePath);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function getAllowedAttachmentMimeTypes(): array
+    {
+        $capabilities = $this->chatService->getProviderCapabilities();
+        $providerMimeTypes = array_values(array_filter(array_map(
+            static fn(string $extension): ?string => self::EXTENSION_MIME_MAP[strtolower($extension)] ?? null,
+            $capabilities['supportedFormats'] ?? [],
+        )));
+
+        return array_values(array_unique(array_merge(
+            $providerMimeTypes,
+            $this->documentExtractorRegistry->getAvailableMimeTypes(),
+        )));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function getAllowedAttachmentExtensions(): array
+    {
+        $capabilities = $this->chatService->getProviderCapabilities();
+        $providerExtensions = array_values(array_filter(array_map(
+            static fn(string $extension): string => strtolower(trim($extension)),
+            $capabilities['supportedFormats'] ?? [],
+        ), static fn(string $extension): bool => $extension !== '' && !str_contains($extension, '/')));
+
+        return array_values(array_unique(array_merge(
+            $providerExtensions,
+            array_map('strtolower', $this->documentExtractorRegistry->getAvailableExtensions()),
+        )));
     }
 
     /**

@@ -1477,7 +1477,7 @@ export class AiChatPanel extends LitElement {
                             @click=${() => this.chat.handleSend()}
                             aria-label="${lll('chat.send')}"
                             title="${lll('chat.send')}"
-                            ?disabled=${!this.chat.hasInput || this.chat.sending || this.chat.isProcessing() || !this.chat.available}>
+                            ?disabled=${!this.chat.canSend()}>
                         ${this.chat.sending ? html`<span class="spinner" style="width:14px;height:14px;border-width:2px;"></span>` : ICON_SEND(16)}
                     </button>
                 </div>

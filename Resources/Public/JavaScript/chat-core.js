@@ -3,6 +3,7 @@ import {lll} from '@typo3/core/lit-helper.js';
 import {renderMarkdown} from './markdown.js';
 
 export const PROCESSING_STATUSES = new Set(['processing', 'locked', 'tool_loop']);
+const ATTACHMENT_ONLY_MESSAGE = 'Please analyze the attached file "%s".';
 
 /**
  * ChatCoreController – Lit ReactiveController that encapsulates all chat
@@ -219,9 +220,18 @@ export class ChatCoreController {
         return PROCESSING_STATUSES.has(this.status);
     }
 
+    canSend() {
+        return (this.hasInput || this.pendingFile !== null)
+            && !this.sending
+            && !this.isProcessing()
+            && this.available;
+    }
+
     async handleSend() {
         const content = this.inputValue.trim();
-        if (!content || this.sending || this.isProcessing()) return;
+        const pendingFile = this.pendingFile;
+        const fileUid = pendingFile?.fileUid ?? null;
+        if ((!content && fileUid === null) || this.sending || this.isProcessing() || !this.available) return;
 
         if (this.maxLength > 0 && content.length > this.maxLength) {
             this.errorMessage = lll('chat.messageTooLong', this.maxLength);
@@ -229,7 +239,7 @@ export class ChatCoreController {
             return;
         }
 
-        const fileUid = this.pendingFile?.fileUid ?? null;
+        const messageContent = content || this._getAttachmentOnlyMessage(pendingFile?.name);
 
         this.sending = true;
         this.errorMessage = '';
@@ -240,11 +250,11 @@ export class ChatCoreController {
             this.hasInput = false;
             this.host.onResetInput();
             // Optimistic: add user message locally
-            const msg = {role: 'user', content, createdAt: new Date().toISOString()};
-            if (this.pendingFile) {
-                msg.fileUid = this.pendingFile.fileUid;
-                msg.fileName = this.pendingFile.name;
-                msg.fileMimeType = this.pendingFile.mimeType;
+            const msg = {role: 'user', content: messageContent, createdAt: new Date().toISOString()};
+            if (pendingFile) {
+                msg.fileUid = pendingFile.fileUid;
+                msg.fileName = pendingFile.name;
+                msg.fileMimeType = pendingFile.mimeType;
             }
             this.pendingFile = null;
             this.messages = [...this.messages, msg];
@@ -376,10 +386,18 @@ export class ChatCoreController {
         }
     }
 
-    // Reserved for the TYPO3 Element Browser (FAL picker) flow — not yet wired to UI.
+    // TYPO3 Element Browser (FAL picker) flow.
     handleFileSelect(fileUid, name, mimeType) {
         this.pendingFile = {fileUid, name, mimeType};
         this.host.requestUpdate();
+    }
+
+    _getAttachmentOnlyMessage(fileName = '') {
+        const label = lll('attachment.defaultMessage', fileName);
+        if (label && label !== 'attachment.defaultMessage') {
+            return label;
+        }
+        return ATTACHMENT_ONLY_MESSAGE.replace('%s', fileName || lll('attachment.file') || 'file');
     }
 
     _openFalPicker() {
@@ -390,18 +408,21 @@ export class ChatCoreController {
 
         // TYPO3 registers the element browser URL in settings.Wizards.elementBrowserUrl
         // (set by BackendController via addInlineSetting for route 'wizard_element_browser')
-        const browserUrl = top.TYPO3?.settings?.Wizards?.elementBrowserUrl;
+        const browserUrl = top.TYPO3?.settings?.Wizards?.elementBrowserUrl
+            || globalThis.TYPO3?.settings?.Wizards?.elementBrowserUrl;
         if (!browserUrl) {
             this._setError(lll('fal_picker_unavailable'));
             return;
         }
 
-        // A unique fieldName lets us identify our postMessage response (TYPO3 13/14 both use postMessage)
+        // A unique fieldName lets us identify our Element Browser response.
         const fieldName = 'nr_mcp_agent_fal_picker';
         const extensions = this.supportedFormats.join(',');
-        // bparams format: fieldName|irreConfig|allowedTables|allowedExtensions
-        const bparams = encodeURIComponent(fieldName + '|||' + extensions);
-        const url = browserUrl + '&mode=file&bparams=' + bparams;
+        const url = new URL(browserUrl, window.location.origin);
+        url.searchParams.set('mode', 'file');
+        url.searchParams.set('fieldReference', fieldName);
+        url.searchParams.set('allowedTypes', extensions);
+        url.searchParams.set('useEvents', '1');
 
         // We embed the element browser in an <iframe class="t3js-modal-iframe"> instead of a popup window.
         //
@@ -415,7 +436,7 @@ export class ChatCoreController {
         //   this.opener = window.frames.frameElement.contentWindow.parent   (= our window)
         // and MessageUtility.send() delivers the postMessage to us correctly.
         const iframe = document.createElement('iframe');
-        iframe.src = url;
+        iframe.src = url.toString();
         iframe.className = 't3js-modal-iframe'; // required for TYPO3 getParent() to resolve our window
         iframe.setAttribute('aria-label', lll('fal_picker_label') || 'Select file');
         Object.assign(iframe.style, {
@@ -456,26 +477,25 @@ export class ChatCoreController {
             }
         });
 
-        // TYPO3 element browser sends {actionName:'typo3:elementBrowser:elementAdded', fieldName, value, label}
-        // via MessageUtility.send() → postMessage() to the window resolved by getParent().
+        // TYPO3 v14 Element Browser sends {actionName:'typo3:elementBrowser:elementAdded', fieldName, value, label}
+        // as a bubbling `typo3:element-browser:message` CustomEvent when useEvents=1. Keep the
+        // postMessage listeners as a fallback for older/embedded backend contexts.
         // value = sys_file UID as a plain string ("42") or in table_uid format ("sys_file_42").
-        //
-        // getParent() resolves via `window.frames.frameElement.contentWindow.parent` (= our window).
-        // However, when `top.frames` contains other t3js-modal-iframe frames (e.g. an open TYPO3 backend
-        // modal), getParent() may return `top` or another window instead.  We register the listener on
-        // all candidate windows to ensure we receive the message regardless of where getParent() resolves.
         this._falPickerListener = (event) => {
-            if (event.data?.actionName !== 'typo3:elementBrowser:elementAdded') return;
-            if (event.data?.fieldName !== fieldName) return;
+            const data = event.detail || event.data || {};
+            if (data.actionName !== 'typo3:elementBrowser:elementAdded') return;
+            if (data.fieldName !== fieldName) return;
             if (!this._falPickerOverlay) return; // guard against duplicate invocations
             this._cleanupFalPicker();
             // Extract the trailing integer — handles both "42" and "sys_file_42"
-            const match = String(event.data.value ?? '').match(/(\d+)$/);
+            const match = String(data.value ?? '').match(/(\d+)$/);
             const uid = match ? parseInt(match[1], 10) : 0;
             if (uid > 0) {
                 this._onFalFileSelected(uid);
             }
         };
+        iframe.addEventListener('typo3:element-browser:message', this._falPickerListener);
+        this._falPickerEventTarget = iframe;
         this._addFalPickerMessageListeners();
     }
 
@@ -508,10 +528,12 @@ export class ChatCoreController {
     _cleanupFalPicker() {
         if (this._falPickerListener) {
             const fn = this._falPickerListener;
+            this._falPickerEventTarget?.removeEventListener('typo3:element-browser:message', fn);
             globalThis.removeEventListener('message', fn);
             (this._falPickerExtraWindows || []).forEach(w => {
                 try { w.removeEventListener('message', fn); } catch { /* cross-origin */ }
             });
+            this._falPickerEventTarget = null;
             this._falPickerExtraWindows = null;
             this._falPickerListener = null;
         }
