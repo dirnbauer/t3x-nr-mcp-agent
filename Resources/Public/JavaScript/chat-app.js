@@ -3,7 +3,7 @@ import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {lll} from '@typo3/core/lit-helper.js';
 import {ChatCoreController} from './chat-core.js';
 import {markdownStyles} from './markdown-styles.js';
-import {AVATAR_ASSISTANT, AVATAR_USER, ICON_PAPERCLIP, ICON_SEND, ICON_COMPOSE, ICON_CHEVRON_DOWN, ICON_UPLOAD, ICON_HISTORY, ICON_MENU, ICON_PANEL_LEFT_CLOSE, ICON_PIN, ICON_ARCHIVE} from './icons.js';
+import {AVATAR_ASSISTANT, AVATAR_USER, ICON_PAPERCLIP, ICON_SEND, ICON_COMPOSE, ICON_CHEVRON_DOWN, ICON_UPLOAD, ICON_HISTORY, ICON_PANEL_LEFT_OPEN, ICON_PANEL_LEFT_CLOSE, ICON_PIN, ICON_ARCHIVE} from './icons.js';
 import '@typo3/backend/element/spinner-element.js';
 
 const STATUS_BADGE_VARIANTS = {
@@ -46,6 +46,7 @@ export class ChatApp extends LitElement {
             box-shadow: var(--typo3-component-box-shadow-window, var(--typo3-component-box-shadow));
             font-size: var(--typo3-component-font-size, 13px);
             --nr-chat-control-size: 34px;
+            --nr-chat-header-height: 64px;
             --nr-chat-focus-ring: 0 0 0 var(--typo3-outline-width, .25rem) color-mix(in srgb, var(--typo3-input-focus-border-color), transparent var(--typo3-outline-transparent-mix, 25%));
         }
 
@@ -76,7 +77,10 @@ export class ChatApp extends LitElement {
             align-items: center;
             justify-content: space-between;
             gap: calc(var(--typo3-spacing) * .5);
-            padding: calc(var(--typo3-spacing) * .75);
+            height: var(--nr-chat-header-height);
+            min-height: var(--nr-chat-header-height);
+            box-sizing: border-box;
+            padding: calc(var(--typo3-spacing) * .625) calc(var(--typo3-spacing) * .75);
             border-bottom: 1px solid var(--typo3-component-border-color);
             background: var(--typo3-surface-container-base);
         }
@@ -173,9 +177,11 @@ export class ChatApp extends LitElement {
             display: flex;
             align-items: center;
             gap: calc(var(--typo3-spacing) * .5);
-            padding: calc(var(--typo3-spacing) * .65) calc(var(--typo3-spacing) * .75);
+            height: var(--nr-chat-header-height);
+            min-height: var(--nr-chat-header-height);
+            box-sizing: border-box;
+            padding: calc(var(--typo3-spacing) * .625) calc(var(--typo3-spacing) * .75);
             border-bottom: 1px solid var(--typo3-component-border-color);
-            min-height: 58px;
             background: var(--typo3-surface-container-base);
         }
         .main-title {
@@ -790,7 +796,7 @@ export class ChatApp extends LitElement {
                 @click=${() => this._sidebarCollapsed = !this._sidebarCollapsed}
                 title="${this._sidebarCollapsed ? lll('sidebar.show') : lll('sidebar.hide')}"
                 aria-label="${this._sidebarCollapsed ? lll('sidebar.show') : lll('sidebar.hide')}">
-                ${this._sidebarCollapsed ? ICON_MENU(18) : ICON_PANEL_LEFT_CLOSE(18)}
+                ${this._sidebarCollapsed ? ICON_PANEL_LEFT_OPEN(18) : ICON_PANEL_LEFT_CLOSE(18)}
             </button>
         `;
     }
