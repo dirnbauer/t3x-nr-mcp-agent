@@ -37,8 +37,8 @@
         "netresearch/nr-llm": "dev-main",
         "phpoffice/phpword": "^1.0",
         "smalot/pdfparser": "^2.0",
-        "typo3/cms-backend": "^13.4 || ^14.0",
-        "typo3/cms-core": "^13.4 || ^14.0"
+        "typo3/cms-backend": "^14.3",
+        "typo3/cms-core": "^14.3"
     },
     "require-dev": {
         "captainhook/captainhook": "^5.0",
@@ -46,14 +46,14 @@
         "friendsofphp/php-cs-fixer": "^3.0",
         "infection/infection": "^0.29",
         "phpat/phpat": "^0.11",
-        "phpstan/phpstan": "^2.0",
-        "phpunit/phpunit": "^10.5 || ^11.0",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^11.5",
         "rector/rector": "^2.0",
         "saschaegerer/phpstan-typo3": "^3.0",
-        "typo3/testing-framework": "^8.0 || ^9.0"
+        "typo3/testing-framework": "^9.0"
     },
     "suggest": {
-        "netresearch/nr-vault": "For secure API key storage (^0.4)",
+        "netresearch/nr-vault": "For secure API key storage (^0.5)",
         "hn/typo3-mcp-server": "For TYPO3 content management tools (^1.0)",
         "phpoffice/phpspreadsheet": "^3.0 — Required for XLSX upload support"
     },
@@ -77,10 +77,7 @@
         },
         "bin-dir": ".Build/bin",
         "sort-packages": true,
-        "vendor-dir": ".Build/vendor",
-        "platform": {
-            "php": "8.2.0"
-        }
+        "vendor-dir": ".Build/vendor"
     },
     "extra": {
         "captainhook": {

@@ -3,7 +3,8 @@ includes:
     - %currentWorkingDirectory%/.Build/vendor/phpat/phpat/extension.neon
 
 parameters:
-    level: 10
+    level: max
+    phpVersion: 80200
     paths:
         - ../../Classes
         - ../../Tests/Architecture
