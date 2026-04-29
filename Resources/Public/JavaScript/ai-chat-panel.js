@@ -239,11 +239,13 @@ export class AiChatPanel extends LitElement {
         }
         .sidebar-item {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) 74px 64px;
+            grid-template-columns: minmax(0, 1fr) auto;
+            grid-template-rows: auto auto;
             align-items: center;
-            gap: 6px;
-            min-height: 34px;
-            padding: 5px 7px;
+            column-gap: 8px;
+            row-gap: 4px;
+            min-height: 48px;
+            padding: 7px 8px;
             margin-block-end: 2px;
             cursor: pointer;
             border: 1px solid transparent;
@@ -263,6 +265,8 @@ export class AiChatPanel extends LitElement {
             background: var(--typo3-component-active-bg);
         }
         .sidebar-item .item-title {
+            grid-column: 1 / -1;
+            grid-row: 1;
             display: inline-flex;
             align-items: center;
             gap: 4px;
@@ -276,6 +280,8 @@ export class AiChatPanel extends LitElement {
             white-space: nowrap;
         }
         .sidebar-item > .status-badge {
+            grid-column: 2;
+            grid-row: 2;
             justify-self: end;
         }
         .pinned-icon {
@@ -284,10 +290,15 @@ export class AiChatPanel extends LitElement {
             color: var(--typo3-text-color-warning);
         }
         .sidebar-item-actions {
+            grid-column: 1;
+            grid-row: 2;
             display: flex;
             gap: 2px;
-            justify-self: end;
-            min-width: 64px;
+            justify-self: start;
+            min-width: 0;
+        }
+        .sidebar-item:not(.active) .sidebar-item-actions {
+            display: none;
         }
 
         /* Content area */
