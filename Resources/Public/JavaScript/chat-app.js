@@ -222,13 +222,21 @@ export class ChatApp extends LitElement {
             background: var(--typo3-surface-container-lowest);
             scrollbar-gutter: stable;
         }
-        /* Message row layout (avatar + bubble + timestamp) */
+        /* Message row layout (avatar/time column + text column) */
         .message-row {
             display: flex;
-            align-items: flex-end;
+            align-items: flex-start;
             gap: calc(var(--typo3-spacing) * .625);
         }
         .message-row.user { flex-direction: row-reverse; }
+        .message-meta {
+            width: 48px;
+            flex: 0 0 48px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: calc(var(--typo3-spacing) * .25);
+        }
         .message-bubble {
             display: flex;
             flex-direction: column;
@@ -258,8 +266,10 @@ export class ChatApp extends LitElement {
         .message-time {
             font-size: 11px;
             color: var(--typo3-text-color-variant);
-            margin-top: 3px;
             padding: 0 2px;
+            line-height: 1.1;
+            text-align: center;
+            white-space: nowrap;
         }
         .message {
             padding: calc(var(--typo3-spacing) * .7) calc(var(--typo3-spacing) * .85);
@@ -809,7 +819,9 @@ export class ChatApp extends LitElement {
                 ${this.chat.messages.map((msg, idx) => this._renderMessage(msg, idx))}
                 ${this.chat.isProcessing() ? html`
                     <div class="message-row assistant" aria-label="${lll('chat.processing')}">
-                        <div class="avatar avatar-assistant">${AVATAR_ASSISTANT(16)}</div>
+                        <div class="message-meta">
+                            <div class="avatar avatar-assistant">${AVATAR_ASSISTANT(16)}</div>
+                        </div>
                         <div class="typing-indicator" aria-hidden="true"><span></span><span></span><span></span></div>
                     </div>
                 ` : nothing}
@@ -952,12 +964,15 @@ export class ChatApp extends LitElement {
 
         return html`
             <div class="message-row ${role}">
-                ${isUser ? nothing : html`<div class="avatar avatar-assistant">${AVATAR_ASSISTANT(16)}</div>`}
-                <div class="message-bubble">
-                    <div class="message ${role}">${bubbleContent}</div>
+                <div class="message-meta">
+                    <div class="avatar ${isUser ? 'avatar-user' : 'avatar-assistant'}">
+                        ${isUser ? AVATAR_USER(16) : AVATAR_ASSISTANT(16)}
+                    </div>
                     ${time ? html`<div class="message-time">${time}</div>` : nothing}
                 </div>
-                ${isUser ? html`<div class="avatar avatar-user">${AVATAR_USER(16)}</div>` : nothing}
+                <div class="message-bubble">
+                    <div class="message ${role}">${bubbleContent}</div>
+                </div>
             </div>
         `;
     }
