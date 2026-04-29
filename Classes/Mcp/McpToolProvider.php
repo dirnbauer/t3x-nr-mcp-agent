@@ -286,8 +286,25 @@ final class McpToolProvider implements McpToolProviderInterface
      */
     private function normalizeToolSchema(array $schema): array
     {
-        if ($schema === [] || !isset($schema['type'])) {
+        if ($schema === []) {
             return ['type' => 'object', 'properties' => new stdClass()];
+        }
+
+        if (($schema['type'] ?? null) !== 'object') {
+            $schema['type'] = 'object';
+        }
+
+        foreach (['oneOf', 'anyOf', 'allOf', 'not', 'enum'] as $unsupportedTopLevelKeyword) {
+            unset($schema[$unsupportedTopLevelKeyword]);
+        }
+
+        if (isset($schema['required']) && $schema['required'] === []) {
+            unset($schema['required']);
+        }
+
+        if (!isset($schema['properties']) || !is_array($schema['properties'])) {
+            $schema['properties'] = new stdClass();
+            return $schema;
         }
 
         if (isset($schema['properties']) && is_array($schema['properties']) && $schema['properties'] === []) {

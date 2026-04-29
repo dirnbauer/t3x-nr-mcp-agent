@@ -254,6 +254,66 @@ class McpToolProviderTest extends TestCase
     }
 
     #[Test]
+    public function getToolDefinitionsRemovesUnsupportedOpenAiTopLevelSchemaKeywords(): void
+    {
+        $cache = $this->createMock(FrontendInterface::class);
+        $cache->method('get')->willReturn(false);
+
+        $serverRepo = $this->createMock(McpServerRepository::class);
+        $serverRepo->method('findAllActive')->willReturn([
+            $this->makeServerRow('typo3', 'TYPO3 MCP Server'),
+        ]);
+
+        $config = $this->createMock(ExtensionConfiguration::class);
+        $config->method('isMcpEnabled')->willReturn(true);
+
+        $provider = new McpToolProvider($config, $serverRepo, $cache, new NullLogger());
+
+        $connection = $this->createFakeServerConnection([
+            'tools/list' => [
+                'tools' => [
+                    [
+                        'name' => 'ReadFileMetadata',
+                        'description' => 'Read file metadata',
+                        'inputSchema' => [
+                            'type' => 'object',
+                            'properties' => [
+                                'uid' => ['type' => 'integer'],
+                                'identifier' => ['type' => 'string'],
+                                'mode' => ['type' => 'string', 'enum' => ['summary', 'full']],
+                            ],
+                            'oneOf' => [
+                                ['required' => ['uid']],
+                                ['required' => ['identifier']],
+                            ],
+                            'anyOf' => [],
+                            'allOf' => [],
+                            'not' => [],
+                            'enum' => [],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $ref = new ReflectionClass($provider);
+        $connProp = $ref->getProperty('connections');
+        $connProp->setValue($provider, ['typo3' => $connection]);
+
+        $tools = $provider->getToolDefinitions();
+
+        self::assertCount(1, $tools);
+        $params = $tools[0]['function']['parameters'];
+        self::assertSame('object', $params['type']);
+        self::assertArrayNotHasKey('oneOf', $params);
+        self::assertArrayNotHasKey('anyOf', $params);
+        self::assertArrayNotHasKey('allOf', $params);
+        self::assertArrayNotHasKey('not', $params);
+        self::assertArrayNotHasKey('enum', $params);
+        self::assertSame(['summary', 'full'], $params['properties']['mode']['enum']);
+    }
+
+    #[Test]
     public function disconnectClearsConnectionsAndToolIndex(): void
     {
         $cachedTools = [
