@@ -122,13 +122,29 @@ export class AiChatPanel extends LitElement {
         .panel-header:active {
             cursor: grabbing;
         }
-        .panel-header .title {
+        .panel-title-group {
             flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .panel-header .title {
+            min-width: 0;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             font-size: 13.5px;
             font-weight: 600;
+        }
+        .panel-title-group .status-badge {
+            flex-shrink: 0;
+        }
+        .panel-actions {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            flex-shrink: 0;
         }
 
         /* Panel body */
@@ -1111,19 +1127,23 @@ export class AiChatPanel extends LitElement {
                  @pointerdown=${(e) => this._onDragStart(e)}
                  @click=${(e) => this._onHeaderClick(e)}
                  @dblclick=${(e) => this._onHeaderDblClick(e)}>
-                <span class="title">${title}</span>
-                ${this.chat.status ? html`
-                    <span class="status-badge status-${this.chat.status}" title="${this.chat.status}">${STATUS_ICONS[this.chat.status] ?? this.chat.status}</span>
-                ` : nothing}
-                <button class="btn-icon" @click=${() => this.collapse()}
-                        title="${lll('panel.collapse')}" aria-label="${lll('panel.collapse')}">${ICON_MINIMIZE(16)}</button>
-                <button class="btn-icon" @click=${() => this.maximize()}
-                        title="${this.state === STATES.MAXIMIZED ? lll('panel.restore') : lll('panel.maximize')}"
-                        aria-label="${this.state === STATES.MAXIMIZED ? lll('panel.restore') : lll('panel.maximize')}">
-                    ${this.state === STATES.MAXIMIZED ? ICON_RESTORE(16) : ICON_MAXIMIZE(16)}
-                </button>
-                <button class="btn-icon" @click=${() => this.hide()}
-                        title="${lll('panel.close')}" aria-label="${lll('panel.close')}">${ICON_CLOSE(16)}</button>
+                <div class="panel-title-group">
+                    <span class="title">${title}</span>
+                    ${this.chat.status ? html`
+                        <span class="status-badge status-${this.chat.status}" title="${this.chat.status}">${STATUS_ICONS[this.chat.status] ?? this.chat.status}</span>
+                    ` : nothing}
+                </div>
+                <div class="panel-actions" role="group" aria-label="${lll('panel.windowActions') || 'Window actions'}">
+                    <button class="btn-icon" @click=${() => this.collapse()}
+                            title="${lll('panel.collapse')}" aria-label="${lll('panel.collapse')}">${ICON_MINIMIZE(16)}</button>
+                    <button class="btn-icon" @click=${() => this.maximize()}
+                            title="${this.state === STATES.MAXIMIZED ? lll('panel.restore') : lll('panel.maximize')}"
+                            aria-label="${this.state === STATES.MAXIMIZED ? lll('panel.restore') : lll('panel.maximize')}">
+                        ${this.state === STATES.MAXIMIZED ? ICON_RESTORE(16) : ICON_MAXIMIZE(16)}
+                    </button>
+                    <button class="btn-icon" @click=${() => this.hide()}
+                            title="${lll('panel.close')}" aria-label="${lll('panel.close')}">${ICON_CLOSE(16)}</button>
+                </div>
             </div>
         `;
     }

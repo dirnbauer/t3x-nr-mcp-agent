@@ -18,6 +18,9 @@
             <trans-unit id="panel.close" resname="panel.close">
                 <source>Close</source>
             </trans-unit>
+            <trans-unit id="panel.windowActions" resname="panel.windowActions">
+                <source>Window actions</source>
+            </trans-unit>
             <trans-unit id="panel.resize" resname="panel.resize">
                 <source>Resize panel</source>
             </trans-unit>

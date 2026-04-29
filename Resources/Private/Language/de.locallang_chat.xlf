@@ -23,6 +23,10 @@
                 <source>Close</source>
                 <target>Schließen</target>
             </trans-unit>
+            <trans-unit id="panel.windowActions" resname="panel.windowActions">
+                <source>Window actions</source>
+                <target>Fensteraktionen</target>
+            </trans-unit>
             <trans-unit id="panel.resize" resname="panel.resize">
                 <source>Resize panel</source>
                 <target>Fenstergröße ändern</target>
