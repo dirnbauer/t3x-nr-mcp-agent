@@ -7,10 +7,13 @@ Installation
 Requirements
 ============
 
-*   TYPO3 v13.4+ or v14.x
+The current branch intentionally targets TYPO3 14 only. TYPO3 13 compatibility
+code has been removed, and backend translations use XLIFF 2.0.
+
+*   TYPO3 v14.3 LTS only
 *   PHP 8.2+
 *   `netresearch/nr-llm <https://github.com/netresearch/
-    t3x-nr-llm>`__ (^0.6) -- LLM abstraction layer
+    t3x-nr-llm>`__ (TYPO3 14 line) -- LLM abstraction layer
 
 Optional:
 
@@ -18,7 +21,7 @@ Optional:
     hauptsache-net/typo3-mcp-server>`__ (^1.0) --
     for TYPO3 content management tools
 *   `netresearch/nr-vault <https://github.com/netresearch/
-    t3x-nr-vault>`__ (^0.4) -- for secure API key storage
+    t3x-nr-vault>`__ (TYPO3 14 line) -- for secure API key storage
 
 Quick start
 ===========

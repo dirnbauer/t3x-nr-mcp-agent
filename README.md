@@ -11,6 +11,14 @@ Powered by [nr-llm](https://github.com/netresearch/t3x-nr-llm) and the
 [Model Context Protocol (MCP)](https://modelcontextprotocol.io/), it enables
 backend users to manage content through natural language.
 
+## Compatibility
+
+- TYPO3 14.3 LTS only (`typo3/cms-core:^14.3`)
+- PHP 8.2+
+- Requires `netresearch/nr-llm` from the TYPO3 14 line
+- XLIFF 2.0 language files with German and English backend translations
+- Static analysis uses the TYPO3 PHPStan setup at `level: max`
+
 ![AI agent creating a page, adding content, and rating it in TYPO3](Documentation/Images/AgentDemo.gif)
 
 ## Features
