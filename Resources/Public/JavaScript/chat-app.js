@@ -22,13 +22,15 @@ export class ChatApp extends LitElement {
         :host {
             display: flex;
             flex-direction: column;
-            height: calc(100vh - 200px);
-            min-height: 400px;
-            border: 1px solid var(--typo3-list-border-color, #ccc);
-            border-radius: 4px;
+            height: min(760px, calc(100dvh - var(--module-docheader-height, 7rem) - 3rem));
+            min-height: 28rem;
+            border: 1px solid var(--typo3-component-border-color);
+            border-radius: var(--typo3-component-border-radius);
             overflow: hidden;
             font-family: var(--typo3-font-family, sans-serif);
-            background: var(--typo3-surface-container-lowest, #fff);
+            background: var(--typo3-component-bg);
+            color: var(--typo3-component-color);
+            box-shadow: var(--typo3-component-box-shadow);
         }
 
         .chat-body {
@@ -41,10 +43,10 @@ export class ChatApp extends LitElement {
         .sidebar {
             width: 280px;
             min-width: 280px;
-            border-right: 1px solid var(--typo3-list-border-color, #ccc);
+            border-right: 1px solid var(--typo3-component-border-color);
             display: flex;
             flex-direction: column;
-            background: var(--typo3-surface-container-low, #f5f5f5);
+            background: var(--typo3-surface-container-low);
         }
         .sidebar.collapsed {
             width: 0;
@@ -57,7 +59,7 @@ export class ChatApp extends LitElement {
             align-items: center;
             justify-content: space-between;
             padding: 12px;
-            border-bottom: 1px solid var(--typo3-list-border-color, #ccc);
+            border-bottom: 1px solid var(--typo3-component-border-color);
         }
         .sidebar-header h3 {
             margin: 0;
@@ -74,19 +76,19 @@ export class ChatApp extends LitElement {
             gap: 8px;
             padding: 10px 12px;
             cursor: pointer;
-            border-bottom: 1px solid var(--typo3-list-border-color, #eee);
+            border-bottom: 1px solid var(--typo3-component-border-color);
             transition: background 0.15s;
         }
         .conversation-item:hover,
         .conversation-item:focus-visible {
-            background: var(--typo3-state-hover, rgba(0,0,0,0.04));
+            background: var(--typo3-component-hover-bg);
         }
         .conversation-item:focus-visible {
-            outline: 2px solid var(--typo3-primary, #0078d4);
+            outline: 2px solid var(--typo3-input-focus-border-color);
             outline-offset: -2px;
         }
         .conversation-item.active {
-            background: var(--typo3-state-active, rgba(0,0,0,0.08));
+            background: var(--typo3-component-active-bg);
         }
         .conversation-item .title {
             flex: 1;
@@ -97,7 +99,7 @@ export class ChatApp extends LitElement {
         }
         .conversation-item .meta {
             font-size: 11px;
-            color: var(--typo3-text-color-variant, #666);
+            color: var(--typo3-text-color-variant);
         }
 
         /* Main area */
@@ -112,16 +114,16 @@ export class ChatApp extends LitElement {
             align-items: center;
             gap: 8px;
             padding: 8px 12px;
-            border-bottom: 1px solid var(--typo3-list-border-color, #ccc);
+            border-bottom: 1px solid var(--typo3-component-border-color);
             min-height: 44px;
         }
         .messages {
             flex: 1;
             overflow-y: auto;
-            padding: 16px;
+            padding: var(--typo3-spacing);
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: calc(var(--typo3-spacing) * .75);
         }
         /* Message row layout (avatar + bubble + timestamp) */
         .message-row {
@@ -145,11 +147,11 @@ export class ChatApp extends LitElement {
             align-items: center;
             justify-content: center;
         }
-        .avatar-assistant { background: #0078d4; color: #fff; }
-        .avatar-user { background: var(--typo3-surface-container-high, #e0e0e0); color: #555; }
+        .avatar-assistant { background: var(--typo3-state-primary-bg); color: var(--typo3-state-primary-color); }
+        .avatar-user { background: var(--typo3-state-default-bg); color: var(--typo3-state-default-color); }
         .message-time {
             font-size: 11px;
-            color: var(--typo3-text-color-variant, #999);
+            color: var(--typo3-text-color-variant);
             margin-top: 3px;
             padding: 0 2px;
         }
@@ -161,17 +163,18 @@ export class ChatApp extends LitElement {
             word-break: break-word;
         }
         .message.user {
-            background: #0078d4;
-            color: #fff;
+            background: var(--typo3-state-primary-bg);
+            color: var(--typo3-state-primary-color);
             border-bottom-right-radius: 2px;
         }
         .message.assistant {
-            background: var(--typo3-surface-container-high, #e8e8e8);
+            background: var(--typo3-surface-container-base);
+            color: var(--typo3-text-color-base);
             border-bottom-left-radius: 2px;
         }
         .message.tool {
             align-self: flex-start;
-            background: var(--typo3-surface-container, #f0f0f0);
+            background: var(--typo3-surface-container-base);
             font-size: 12px;
             font-family: monospace;
             opacity: 0.7;
@@ -190,7 +193,7 @@ export class ChatApp extends LitElement {
             left: 0;
             right: 0;
             height: 24px;
-            background: linear-gradient(transparent, var(--typo3-surface-container, #f0f0f0));
+            background: linear-gradient(transparent, var(--typo3-surface-container-base));
             display: flex;
             align-items: flex-end;
             justify-content: center;
@@ -200,16 +203,22 @@ export class ChatApp extends LitElement {
         .message.system {
             align-self: center;
             font-size: 12px;
-            color: var(--typo3-text-color-variant, #666);
+            color: var(--typo3-text-color-variant);
             font-style: italic;
+        }
+        .message.system.error {
+            color: var(--typo3-text-color-danger);
+        }
+        .message .inline-action {
+            margin-left: calc(var(--typo3-spacing) * .5);
         }
 
         /* Attachment area */
         .file-badge {
             display: flex; align-items: center; gap: 6px;
             padding: 4px 8px; margin: 4px 12px 0;
-            background: var(--typo3-surface-container-low, #f5f5f5);
-            border: 1px solid var(--typo3-list-border-color, #ccc);
+            background: var(--typo3-surface-container-low);
+            border: 1px solid var(--typo3-component-border-color);
             border-radius: 6px; font-size: 12px;
         }
         .file-badge .file-badge-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -226,10 +235,10 @@ export class ChatApp extends LitElement {
             position: absolute;
             bottom: calc(100% + 4px);
             left: 0;
-            background: var(--typo3-surface-container-lowest, #fff);
-            border: 1px solid var(--typo3-list-border-color, #ccc);
-            border-radius: 6px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            background: var(--typo3-surface-container-lowest);
+            border: 1px solid var(--typo3-component-border-color);
+            border-radius: var(--typo3-component-border-radius);
+            box-shadow: var(--typo3-component-box-shadow-flyout);
             list-style: none;
             margin: 0;
             padding: 4px 0;
@@ -245,31 +254,31 @@ export class ChatApp extends LitElement {
             font-size: 13px;
             white-space: nowrap;
         }
-        .attach-menu li:hover { background: var(--typo3-surface-container, #f0f0f0); }
+        .attach-menu li:hover { background: var(--typo3-surface-container-base); }
 
         /* Input area */
         .input-area {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 12px;
-            border-top: 1px solid var(--typo3-list-border-color, #ccc);
-            background: var(--typo3-surface-container-low, #f5f5f5);
+            padding: var(--typo3-component-padding-y) var(--typo3-component-padding-x);
+            border-top: 1px solid var(--typo3-component-border-color);
+            background: var(--typo3-surface-container-low);
         }
         .input-wrap {
             flex: 1;
             display: flex;
             align-items: center;
             gap: 4px;
-            border: 1px solid var(--typo3-input-border-color, #ccc);
-            border-radius: 20px;
+            border: 1px solid var(--typo3-input-border-color);
+            border-radius: var(--typo3-input-border-radius);
             padding: 4px 4px 4px 12px;
-            background: var(--typo3-surface-container-lowest, #fff);
+            background: var(--typo3-surface-container-lowest);
             transition: border-color 0.15s, box-shadow 0.15s;
         }
         .input-wrap:focus-within {
-            border-color: var(--typo3-primary, #0078d4);
-            box-shadow: 0 0 0 1px var(--typo3-primary, #0078d4);
+            border-color: var(--typo3-input-focus-border-color);
+            box-shadow: 0 0 0 1px var(--typo3-input-focus-border-color);
         }
         .input-wrap textarea {
             flex: 1;
@@ -292,10 +301,10 @@ export class ChatApp extends LitElement {
             width: 34px;
             height: 34px;
             border-radius: 50%;
-            border: none;
-            background: #0078d4;
+            border: 1px solid var(--typo3-state-primary-border-color);
+            background: var(--typo3-state-primary-bg);
             background-image: none;
-            color: #fff;
+            color: var(--typo3-state-primary-color);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -303,7 +312,7 @@ export class ChatApp extends LitElement {
             transition: background 0.15s, opacity 0.15s;
             margin: 0 2px 0 0;
         }
-        .btn-send:hover:not(:disabled) { background: #006abc; background-image: none; }
+        .btn-send:hover:not(:disabled) { background: var(--typo3-state-primary-hover-bg); background-image: none; }
         .btn-send:disabled { opacity: 0.35; cursor: not-allowed; }
 
         /* Buttons */
@@ -312,29 +321,30 @@ export class ChatApp extends LitElement {
             align-items: center;
             justify-content: center;
             gap: 4px;
-            padding: 6px 12px;
-            border: 1px solid var(--typo3-input-border-color, #ccc);
-            border-radius: 4px;
-            background: var(--typo3-surface-container-lowest, #fff);
+            padding: var(--typo3-input-padding-y) var(--typo3-input-padding-x);
+            border: var(--typo3-input-border-width) solid var(--typo3-state-default-border-color);
+            border-radius: var(--typo3-input-border-radius);
+            background: var(--typo3-state-default-bg);
+            color: var(--typo3-state-default-color);
             cursor: pointer;
             font-size: 13px;
             white-space: nowrap;
             transition: background 0.15s;
         }
         .btn:hover {
-            background: var(--typo3-state-hover, rgba(0,0,0,0.04));
+            background: var(--typo3-component-hover-bg);
         }
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
         .btn-primary {
-            background: #0078d4;
-            color: #fff;
-            border-color: transparent;
+            background: var(--typo3-state-primary-bg);
+            color: var(--typo3-state-primary-color);
+            border-color: var(--typo3-state-primary-border-color);
         }
         .btn-primary:hover:not(:disabled) {
-            background: #006abc;
+            background: var(--typo3-state-primary-hover-bg);
         }
         .btn-sm {
             padding: 4px 8px;
@@ -355,18 +365,18 @@ export class ChatApp extends LitElement {
             font-weight: 600;
             text-transform: uppercase;
         }
-        .status-idle { background: #e8f5e9; color: #2e7d32; }
+        .status-idle { background: var(--typo3-surface-container-success); color: var(--typo3-surface-container-success-text); }
         .status-processing, .status-locked, .status-tool_loop {
-            background: #fff3e0; color: #e65100;
+            background: var(--typo3-surface-container-warning); color: var(--typo3-surface-container-warning-text);
         }
-        .status-failed { background: #ffebee; color: #c62828; }
+        .status-failed { background: var(--typo3-surface-container-danger); color: var(--typo3-surface-container-danger-text); }
 
         .empty-state {
             flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--typo3-text-color-variant, #666);
+            color: var(--typo3-text-color-variant);
             font-size: 14px;
             text-align: center;
             padding: 24px;
@@ -374,18 +384,18 @@ export class ChatApp extends LitElement {
 
         .issues-banner {
             padding: 8px 12px;
-            background: #fff3e0;
-            border-bottom: 1px solid #ffe0b2;
+            background: var(--typo3-surface-container-warning);
+            border-bottom: 1px solid color-mix(in srgb, var(--typo3-surface-container-warning), var(--typo3-surface-container-warning-text) var(--typo3-border-mix));
             font-size: 12px;
-            color: #e65100;
+            color: var(--typo3-surface-container-warning-text);
         }
 
         .spinner {
             display: inline-block;
             width: 14px;
             height: 14px;
-            border: 2px solid rgba(0,0,0,0.1);
-            border-top-color: #0078d4;
+            border: 2px solid color-mix(in srgb, currentColor, transparent 85%);
+            border-top-color: var(--typo3-state-primary-bg);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
@@ -397,7 +407,7 @@ export class ChatApp extends LitElement {
             gap: 4px;
             align-items: center;
             padding: 10px 14px;
-            background: var(--typo3-surface-container-high, #e8e8e8);
+            background: var(--typo3-surface-container-high);
             border-radius: 8px;
             border-bottom-left-radius: 2px;
             width: fit-content;
@@ -406,7 +416,7 @@ export class ChatApp extends LitElement {
             width: 7px;
             height: 7px;
             border-radius: 50%;
-            background: #888;
+            background: var(--typo3-text-color-variant);
             animation: typing-bounce 1.2s infinite ease-in-out;
         }
         .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
@@ -606,14 +616,13 @@ export class ChatApp extends LitElement {
                     </div>
                 ` : nothing}
                 ${this.chat.errorMessage ? html`
-                    <div class="message system" style="color:#c62828;">
+                    <div class="message system error">
                         Error: ${this.chat.errorMessage}
                         ${isResumable ? html`
-                            <button class="btn btn-sm" @click=${() => this.chat.handleResume()}
-                                style="margin-left:8px;">${lll('chat.retry')}</button>
+                            <button class="btn btn-sm inline-action" @click=${() => this.chat.handleResume()}>${lll('chat.retry')}</button>
                         ` : nothing}
                         <button class="btn btn-sm btn-icon" @click=${() => { this.chat.errorMessage = ''; this.requestUpdate(); }}
-                            style="margin-left:4px;" title="${lll('chat.dismiss')}" aria-label="${lll('chat.dismiss')}">&times;</button>
+                            title="${lll('chat.dismiss')}" aria-label="${lll('chat.dismiss')}">&times;</button>
                     </div>
                 ` : nothing}
             </div>
