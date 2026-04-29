@@ -16,5 +16,20 @@
         <source>AI Chat</source>
       </segment>
     </unit>
+    <unit id="attribution.region">
+      <segment>
+        <source>Extension attribution</source>
+      </segment>
+    </unit>
+    <unit id="attribution.logo">
+      <segment>
+        <source>NetResearch</source>
+      </segment>
+    </unit>
+    <unit id="attribution.text">
+      <segment>
+        <source>Thank you from Kurt Dirnbauer. © NetResearch DTT GmbH</source>
+      </segment>
+    </unit>
   </file>
 </xliff>

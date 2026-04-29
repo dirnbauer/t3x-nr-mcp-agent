@@ -19,5 +19,23 @@
         <target state="final">AI Chat</target>
       </segment>
     </unit>
+    <unit id="attribution.region">
+      <segment>
+        <source>Extension attribution</source>
+        <target state="final">Extension-Hinweis</target>
+      </segment>
+    </unit>
+    <unit id="attribution.logo">
+      <segment>
+        <source>NetResearch</source>
+        <target state="final">NetResearch</target>
+      </segment>
+    </unit>
+    <unit id="attribution.text">
+      <segment>
+        <source>Thank you from Kurt Dirnbauer. © NetResearch DTT GmbH</source>
+        <target state="final">Danke von Kurt Dirnbauer. © NetResearch DTT GmbH</target>
+      </segment>
+    </unit>
   </file>
 </xliff>
