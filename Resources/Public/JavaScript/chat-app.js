@@ -843,10 +843,11 @@ export class ChatApp extends LitElement {
                     </div>
                 </div>
                 <div class="main-actions">
-                    <button class="btn btn-sm btn-icon btn-quiet" @click=${() => this.chat.handleTogglePin()}
+                    <button class="btn btn-sm btn-quiet" @click=${() => this.chat.handleTogglePin()}
                         title="${conv?.pinned ? lll('conversations.unpin') : lll('conversations.pin')}"
                         aria-label="${conv?.pinned ? lll('conversations.unpin') : lll('conversations.pin')}">
-                        ${ICON_PIN(16)}
+                        ${ICON_PIN(14)}
+                        ${conv?.pinned ? lll('conversations.unpin') : lll('conversations.pin')}
                     </button>
                     <button class="btn btn-sm"
                         @click=${() => this.chat.handleArchive()}
