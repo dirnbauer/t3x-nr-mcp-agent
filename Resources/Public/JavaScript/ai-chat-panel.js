@@ -4,11 +4,18 @@ import {ref} from 'lit/directives/ref.js';
 import {lll} from '@typo3/core/lit-helper.js';
 import {ChatCoreController} from './chat-core.js';
 import {markdownStyles} from './markdown-styles.js';
-import {AVATAR_ASSISTANT, AVATAR_USER, ICON_PAPERCLIP, ICON_SEND, ICON_COMPOSE, ICON_MINIMIZE, ICON_MAXIMIZE, ICON_RESTORE, ICON_CLOSE, ICON_CHEVRON_DOWN, ICON_UPLOAD, ICON_HISTORY, ICON_PIN, ICON_ARCHIVE} from './icons.js';
+import {AVATAR_ASSISTANT, AVATAR_USER, ICON_PAPERCLIP, ICON_SEND, ICON_COMPOSE, ICON_MINIMIZE, ICON_MAXIMIZE, ICON_RESTORE, ICON_CLOSE, ICON_CHEVRON_DOWN, ICON_UPLOAD, ICON_HISTORY, ICON_PIN, ICON_ARCHIVE, ICON_STATUS_IDLE, ICON_STATUS_PROCESSING, ICON_STATUS_TOOL_LOOP, ICON_STATUS_LOCKED, ICON_STATUS_FAILED} from './icons.js';
 import '@typo3/backend/element/spinner-element.js';
 
 const STATES = {HIDDEN: 'hidden', COLLAPSED: 'collapsed', EXPANDED: 'expanded', MAXIMIZED: 'maximized'};
 const STATUS_ICONS = {idle: '✓', processing: '⟳', tool_loop: '⚙', locked: '⊘', failed: '✕'};
+const STATUS_ICON_RENDERERS = {
+    idle: ICON_STATUS_IDLE,
+    processing: ICON_STATUS_PROCESSING,
+    tool_loop: ICON_STATUS_TOOL_LOOP,
+    locked: ICON_STATUS_LOCKED,
+    failed: ICON_STATUS_FAILED,
+};
 const STATUS_BADGE_VARIANTS = {
     idle: 'badge-success',
     processing: 'badge-warning',
@@ -25,6 +32,11 @@ const STORAGE_KEY = 'ai-chat-panel';
 
 function statusBadgeClasses(status) {
     return `status-badge badge badge-pill ${STATUS_BADGE_VARIANTS[status] ?? 'badge-default'} status-${status}`;
+}
+
+function renderStatusIcon(status, size = 14) {
+    const renderer = STATUS_ICON_RENDERERS[status];
+    return renderer ? renderer(size) : (STATUS_ICONS[status] ?? status);
 }
 
 /**
@@ -167,7 +179,18 @@ export class AiChatPanel extends LitElement {
         }
         .panel-title-group .status-badge {
             flex-shrink: 0;
-            min-width: 2rem;
+        }
+        .panel-title-group .panel-status-icon {
+            width: 26px;
+            min-width: 26px;
+            height: 24px;
+            padding: 0;
+            border-radius: 999px;
+        }
+        .panel-status-icon svg {
+            display: block;
+            width: 14px;
+            height: 14px;
         }
         .panel-actions {
             display: flex;
@@ -1223,7 +1246,9 @@ export class AiChatPanel extends LitElement {
                     <span class="panel-mark" aria-hidden="true">${AVATAR_ASSISTANT(16)}</span>
                     <span class="title">${title}</span>
                     ${this.chat.status ? html`
-                        <span class=${statusBadgeClasses(this.chat.status)} title="${this.chat.status}">${STATUS_ICONS[this.chat.status] ?? this.chat.status}</span>
+                        <span class="${statusBadgeClasses(this.chat.status)} panel-status-icon" title="${this.chat.status}" role="img" aria-label="${this.chat.status}">
+                            ${renderStatusIcon(this.chat.status, 14)}
+                        </span>
                     ` : nothing}
                 </div>
                 <div class="panel-actions" role="group" aria-label="${lll('panel.windowActions') || 'Window actions'}">
