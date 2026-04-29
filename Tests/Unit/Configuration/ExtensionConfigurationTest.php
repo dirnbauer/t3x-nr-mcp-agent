@@ -25,6 +25,7 @@ class ExtensionConfigurationTest extends TestCase
             'enableMcp' => '1',
             'maxMessageLength' => '5000',
             'maxActiveConversationsPerUser' => '2',
+            'enablePdfTextExtraction' => '1',
             'mcpServerCommand' => '/usr/bin/typo3',
             'mcpServerArgs' => 'mcp:server',
         ]);
@@ -184,6 +185,7 @@ class ExtensionConfigurationTest extends TestCase
         self::assertFalse($config->isMcpEnabled());
         self::assertSame(10000, $config->getMaxMessageLength());
         self::assertSame(3, $config->getMaxActiveConversationsPerUser());
+        self::assertFalse($config->isPdfTextExtractionEnabled());
     }
 
     #[Test]
@@ -205,6 +207,13 @@ class ExtensionConfigurationTest extends TestCase
     {
         $config = new ExtensionConfiguration();
         self::assertTrue($config->isMcpEnabled());
+    }
+
+    #[Test]
+    public function isPdfTextExtractionEnabledReturnsTrueForOneString(): void
+    {
+        $config = new ExtensionConfiguration();
+        self::assertTrue($config->isPdfTextExtractionEnabled());
     }
 
     #[Test]

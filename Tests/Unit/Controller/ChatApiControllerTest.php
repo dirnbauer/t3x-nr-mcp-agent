@@ -1029,16 +1029,24 @@ class ChatApiControllerTest extends TestCase
 
         $this->storageRepository->method('getDefaultStorage')->willReturn($storage);
 
-        // Build a subject that has application/pdf in the allowlist via registry extractor
+        // Build a subject that has application/pdf in the allowlist via provider-native document support.
+        $chatService = $this->createMock(ChatCapabilitiesInterface::class);
+        $chatService->method('getProviderCapabilities')->willReturn([
+            'visionSupported' => true,
+            'maxFileSize' => 0,
+            'supportedFormats' => ['pdf'],
+        ]);
+
         $pdfExtractor = $this->createMock(DocumentExtractorInterface::class);
         $pdfExtractor->method('getSupportedMimeTypes')->willReturn(['application/pdf']);
         $pdfExtractor->method('isAvailable')->willReturn(true);
+        $pdfExtractor->expects(self::never())->method('validate');
 
         $subject = new ChatApiController(
             $this->repository,
             $this->processor,
             $this->config,
-            $this->chatService,
+            $chatService,
             $this->resourceFactory,
             $this->storageRepository,
             new DocumentExtractorRegistry([$pdfExtractor]),

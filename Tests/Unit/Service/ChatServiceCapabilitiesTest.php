@@ -30,11 +30,13 @@ class ChatServiceCapabilitiesTest extends TestCase
     private function createChatService(
         ProviderInterface $provider,
         ?\Netresearch\NrMcpAgent\Document\DocumentExtractorRegistry $registry = null,
+        bool $pdfTextExtractionEnabled = false,
     ): ChatService {
         $repository = $this->createMock(ConversationRepository::class);
         $config = $this->createStub(ExtensionConfiguration::class);
         $config->method('getLlmTaskUid')->willReturn(1);
         $config->method('isMcpEnabled')->willReturn(false);
+        $config->method('isPdfTextExtractionEnabled')->willReturn($pdfTextExtractionEnabled);
         $mcpProvider = $this->createMock(McpToolProviderInterface::class);
 
         $llmTaskRepository = $this->createMock(LlmTaskRepository::class);
@@ -202,8 +204,8 @@ class ChatServiceCapabilitiesTest extends TestCase
     {
         $extractor = $this->createMock(\Netresearch\NrMcpAgent\Document\DocumentExtractorInterface::class);
         $extractor->method('isAvailable')->willReturn(true);
-        $extractor->method('getSupportedMimeTypes')->willReturn(['application/pdf']);
-        $extractor->method('getSupportedFileExtensions')->willReturn(['pdf']);
+        $extractor->method('getSupportedMimeTypes')->willReturn(['text/plain']);
+        $extractor->method('getSupportedFileExtensions')->willReturn(['txt']);
 
         $registry = new \Netresearch\NrMcpAgent\Document\DocumentExtractorRegistry([$extractor]);
         $provider = $this->createMock(ProviderInterface::class); // not VisionCapable
@@ -212,8 +214,8 @@ class ChatServiceCapabilitiesTest extends TestCase
         $caps = $service->getProviderCapabilities();
 
         // Registry contributes file extensions (not MIME types) so the UI accept attribute works
-        self::assertContains('pdf', $caps['supportedFormats']);
-        self::assertNotContains('application/pdf', $caps['supportedFormats']);
+        self::assertContains('txt', $caps['supportedFormats']);
+        self::assertNotContains('text/plain', $caps['supportedFormats']);
     }
 
     #[Test]
@@ -221,8 +223,8 @@ class ChatServiceCapabilitiesTest extends TestCase
     {
         $extractor = $this->createMock(\Netresearch\NrMcpAgent\Document\DocumentExtractorInterface::class);
         $extractor->method('isAvailable')->willReturn(true);
-        $extractor->method('getSupportedMimeTypes')->willReturn(['application/pdf']);
-        $extractor->method('getSupportedFileExtensions')->willReturn(['pdf']);
+        $extractor->method('getSupportedMimeTypes')->willReturn(['text/plain']);
+        $extractor->method('getSupportedFileExtensions')->willReturn(['txt']);
 
         $registry = new \Netresearch\NrMcpAgent\Document\DocumentExtractorRegistry([$extractor]);
 
@@ -236,7 +238,25 @@ class ChatServiceCapabilitiesTest extends TestCase
 
         // Provider formats (extensions) and registry extensions are both present
         self::assertContains('jpeg', $caps['supportedFormats']);
-        self::assertContains('pdf', $caps['supportedFormats']);
+        self::assertContains('txt', $caps['supportedFormats']);
+    }
+
+    #[Test]
+    public function pdfExtractionFormatRequiresExplicitConfiguration(): void
+    {
+        $extractor = $this->createMock(\Netresearch\NrMcpAgent\Document\DocumentExtractorInterface::class);
+        $extractor->method('isAvailable')->willReturn(true);
+        $extractor->method('getSupportedMimeTypes')->willReturn(['application/pdf']);
+        $extractor->method('getSupportedFileExtensions')->willReturn(['pdf']);
+
+        $registry = new \Netresearch\NrMcpAgent\Document\DocumentExtractorRegistry([$extractor]);
+        $provider = $this->createMock(ProviderInterface::class);
+
+        $disabledCaps = $this->createChatService($provider, $registry)->getProviderCapabilities();
+        $enabledCaps = $this->createChatService($provider, $registry, true)->getProviderCapabilities();
+
+        self::assertNotContains('pdf', $disabledCaps['supportedFormats']);
+        self::assertContains('pdf', $enabledCaps['supportedFormats']);
     }
 
     #[Test]
@@ -257,7 +277,7 @@ class ChatServiceCapabilitiesTest extends TestCase
         $provider->method('supportsDocuments')->willReturn(true);
         $provider->method('getSupportedDocumentFormats')->willReturn(['pdf']); // same as registry
 
-        $service = $this->createChatService($provider, $registry);
+        $service = $this->createChatService($provider, $registry, true);
         $caps = $service->getProviderCapabilities();
 
         self::assertSame(1, count(array_filter($caps['supportedFormats'], fn($f) => $f === 'pdf')));

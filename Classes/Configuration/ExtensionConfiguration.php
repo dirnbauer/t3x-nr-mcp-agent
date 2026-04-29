@@ -75,6 +75,11 @@ class ExtensionConfiguration
         return (int) $this->getString('maxActiveConversationsPerUser', '3');
     }
 
+    public function isPdfTextExtractionEnabled(): bool
+    {
+        return $this->getString('enablePdfTextExtraction', '0') === '1';
+    }
+
     private function getString(string $key, string $default): string
     {
         $value = $this->config[$key] ?? $default;

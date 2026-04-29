@@ -1464,6 +1464,7 @@ class ChatServiceTest extends TestCase
 
     private function createChatServiceWithRegistry(
         \Netresearch\NrMcpAgent\Document\DocumentExtractorRegistry $registry,
+        bool $pdfTextExtractionEnabled = false,
     ): ChatService {
         $provider = $this->createMock(ProviderInterface::class);
         $provider->method('chatCompletion')->willReturn($this->createCompletionResponse('ok'));
@@ -1471,6 +1472,7 @@ class ChatServiceTest extends TestCase
         $config = $this->createStub(ExtensionConfiguration::class);
         $config->method('getLlmTaskUid')->willReturn(1);
         $config->method('isMcpEnabled')->willReturn(false);
+        $config->method('isPdfTextExtractionEnabled')->willReturn($pdfTextExtractionEnabled);
 
         $model = $this->createMock(\Netresearch\NrLlm\Domain\Model\Model::class);
         $llmTaskRepository = $this->createMock(\Netresearch\NrMcpAgent\Domain\Repository\LlmTaskRepository::class);
@@ -1523,6 +1525,51 @@ class ChatServiceTest extends TestCase
         self::assertStringStartsWith('[Extracted from ', $block['text']);
         self::assertStringContainsString(basename($tmpPath), $block['text']);
         self::assertStringContainsString('Hello TXT', $block['text']);
+    }
+
+    #[Test]
+    public function buildFileContentBlockDoesNotExtractPdfWhenDisabled(): void
+    {
+        $provider = $this->createMock(\Netresearch\NrLlm\Provider\Contract\ProviderInterface::class);
+        $provider->method('getIdentifier')->willReturn('test');
+
+        $extractor = $this->createMock(\Netresearch\NrMcpAgent\Document\DocumentExtractorInterface::class);
+        $extractor->method('isAvailable')->willReturn(true);
+        $extractor->method('getSupportedMimeTypes')->willReturn(['application/pdf']);
+        $extractor->expects(self::never())->method('extract');
+        $registry = new \Netresearch\NrMcpAgent\Document\DocumentExtractorRegistry([$extractor]);
+
+        $service = $this->createChatServiceWithRegistry($registry);
+
+        $method = new ReflectionMethod($service, 'buildFileContentBlock');
+        $method->setAccessible(true);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('does not support document uploads');
+
+        $method->invoke($service, 'application/pdf', base64_encode('%PDF'), '/tmp/report.pdf', $provider);
+    }
+
+    #[Test]
+    public function buildFileContentBlockExtractsPdfWhenExplicitlyEnabled(): void
+    {
+        $provider = $this->createMock(\Netresearch\NrLlm\Provider\Contract\ProviderInterface::class);
+
+        $extractor = $this->createMock(\Netresearch\NrMcpAgent\Document\DocumentExtractorInterface::class);
+        $extractor->method('isAvailable')->willReturn(true);
+        $extractor->method('getSupportedMimeTypes')->willReturn(['application/pdf']);
+        $extractor->expects(self::once())->method('extract')->willReturn('Hello PDF');
+        $registry = new \Netresearch\NrMcpAgent\Document\DocumentExtractorRegistry([$extractor]);
+
+        $service = $this->createChatServiceWithRegistry($registry, true);
+
+        $method = new ReflectionMethod($service, 'buildFileContentBlock');
+        $method->setAccessible(true);
+
+        $block = $method->invoke($service, 'application/pdf', base64_encode('%PDF'), '/tmp/report.pdf', $provider);
+
+        self::assertSame('text', $block['type']);
+        self::assertStringContainsString('Hello PDF', $block['text']);
     }
 
     // -------------------------------------------------------------------------

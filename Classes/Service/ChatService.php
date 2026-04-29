@@ -52,7 +52,7 @@ final class ChatService implements ChatCapabilitiesInterface
      */
     public function getProviderCapabilities(): array
     {
-        $extractionFormats = $this->documentExtractorRegistry->getAvailableExtensions();
+        $extractionFormats = $this->getEnabledExtractionFormats();
 
         try {
             $provider = $this->resolveProvider();
@@ -465,7 +465,7 @@ final class ChatService implements ChatCapabilitiesInterface
                 'source' => ['type' => 'base64', 'media_type' => $mimeType, 'data' => $base64],
             ];
         }
-        if ($this->documentExtractorRegistry->canExtract($mimeType)) {
+        if ($this->isExtractionEnabledForMimeType($mimeType) && $this->documentExtractorRegistry->canExtract($mimeType)) {
             $text = $this->documentExtractorRegistry->extract($localPath, $mimeType);
             return [
                 'type' => 'text',
@@ -477,6 +477,27 @@ final class ChatService implements ChatCapabilitiesInterface
             'Provider "' . $provider->getIdentifier() . '" does not support document uploads (mime type: ' . $mimeType . ')',
             1742320000,
         );
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function getEnabledExtractionFormats(): array
+    {
+        $formats = $this->documentExtractorRegistry->getAvailableExtensions();
+        if ($this->config->isPdfTextExtractionEnabled()) {
+            return $formats;
+        }
+
+        return array_values(array_filter(
+            $formats,
+            static fn(string $format): bool => strtolower($format) !== 'pdf',
+        ));
+    }
+
+    private function isExtractionEnabledForMimeType(string $mimeType): bool
+    {
+        return $mimeType !== 'application/pdf' || $this->config->isPdfTextExtractionEnabled();
     }
 
     private function buildSystemPrompt(Conversation $conversation): string

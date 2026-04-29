@@ -21,3 +21,6 @@ maxMessageLength = 10000
 
 # cat=basic/security; type=int; label=Maximum active (processing) conversations per user (0 = unlimited)
 maxActiveConversationsPerUser = 3
+
+# cat=basic/security; type=boolean; label=Enable PDF text extraction fallback (disabled sends PDFs only as provider-native documents)
+enablePdfTextExtraction = 0

@@ -34,9 +34,9 @@ class ChatApiControllerFileInfoTest extends TestCase
 
         $chatService = $this->createMock(ChatCapabilitiesInterface::class);
         $chatService->method('getProviderCapabilities')->willReturn([
-            'visionSupported' => false,
+            'visionSupported' => true,
             'maxFileSize' => 0,
-            'supportedFormats' => [],
+            'supportedFormats' => ['pdf'],
         ]);
 
         $this->resourceFactory = $this->createMock(ResourceFactory::class);

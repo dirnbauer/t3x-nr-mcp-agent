@@ -301,8 +301,8 @@ final readonly class ChatApiController
             return new JsonResponse(['error' => 'File type not supported'], 422);
         }
 
-        // For extraction-backed formats, run lightweight validation at upload time
-        if ($this->documentExtractorRegistry->canExtract($detectedMime)) {
+        // For enabled extraction-backed formats, run lightweight validation at upload time
+        if ($this->isExtractionEnabledForMimeType($detectedMime) && $this->documentExtractorRegistry->canExtract($detectedMime)) {
             try {
                 $this->documentExtractorRegistry->validate($tempPath, $detectedMime);
             } catch (RuntimeException $e) {
@@ -565,7 +565,7 @@ final readonly class ChatApiController
 
         return array_values(array_unique(array_merge(
             $providerMimeTypes,
-            $this->documentExtractorRegistry->getAvailableMimeTypes(),
+            $this->getEnabledExtractionMimeTypes(),
         )));
     }
 
@@ -582,8 +582,45 @@ final readonly class ChatApiController
 
         return array_values(array_unique(array_merge(
             $providerExtensions,
-            array_map('strtolower', $this->documentExtractorRegistry->getAvailableExtensions()),
+            $this->getEnabledExtractionExtensions(),
         )));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function getEnabledExtractionMimeTypes(): array
+    {
+        $mimeTypes = $this->documentExtractorRegistry->getAvailableMimeTypes();
+        if ($this->config->isPdfTextExtractionEnabled()) {
+            return $mimeTypes;
+        }
+
+        return array_values(array_filter(
+            $mimeTypes,
+            static fn(string $mimeType): bool => $mimeType !== 'application/pdf',
+        ));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function getEnabledExtractionExtensions(): array
+    {
+        $extensions = array_map('strtolower', $this->documentExtractorRegistry->getAvailableExtensions());
+        if ($this->config->isPdfTextExtractionEnabled()) {
+            return $extensions;
+        }
+
+        return array_values(array_filter(
+            $extensions,
+            static fn(string $extension): bool => $extension !== 'pdf',
+        ));
+    }
+
+    private function isExtractionEnabledForMimeType(string $mimeType): bool
+    {
+        return $mimeType !== 'application/pdf' || $this->config->isPdfTextExtractionEnabled();
     }
 
     /**
