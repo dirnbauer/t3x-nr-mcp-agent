@@ -1,178 +1,263 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-    <file source-language="en" target-language="de" datatype="plaintext" original="messages" date="2025-01-01T00:00:00Z" product-name="nr_mcp_agent">
-        <body>
-            <!-- Panel header -->
-            <trans-unit id="panel.title" resname="panel.title">
-                <source>AI Chat</source>
-                <target>KI-Chat</target>
-            </trans-unit>
-            <trans-unit id="panel.collapse" resname="panel.collapse">
-                <source>Minimize</source>
-                <target>Minimieren</target>
-            </trans-unit>
-            <trans-unit id="panel.maximize" resname="panel.maximize">
-                <source>Maximize</source>
-                <target>Maximieren</target>
-            </trans-unit>
-            <trans-unit id="panel.restore" resname="panel.restore">
-                <source>Restore</source>
-                <target>Wiederherstellen</target>
-            </trans-unit>
-            <trans-unit id="panel.close" resname="panel.close">
-                <source>Close</source>
-                <target>Schließen</target>
-            </trans-unit>
-            <trans-unit id="panel.windowActions" resname="panel.windowActions">
-                <source>Window actions</source>
-                <target>Fensteraktionen</target>
-            </trans-unit>
-            <trans-unit id="panel.resize" resname="panel.resize">
-                <source>Resize panel</source>
-                <target>Fenstergröße ändern</target>
-            </trans-unit>
-
-            <!-- Sidebar -->
-            <trans-unit id="sidebar.show" resname="sidebar.show">
-                <source>Show sidebar</source>
-                <target>Seitenleiste einblenden</target>
-            </trans-unit>
-            <trans-unit id="sidebar.hide" resname="sidebar.hide">
-                <source>Hide sidebar</source>
-                <target>Seitenleiste ausblenden</target>
-            </trans-unit>
-
-            <!-- Conversations -->
-            <trans-unit id="conversations.title" resname="conversations.title">
-                <source>Chats</source>
-                <target>Chats</target>
-            </trans-unit>
-            <trans-unit id="conversations.new" resname="conversations.new">
-                <source>New chat</source>
-                <target>Neuer Chat</target>
-            </trans-unit>
-            <trans-unit id="conversations.empty" resname="conversations.empty">
-                <source>No chats yet. Start a new one!</source>
-                <target>Noch keine Chats. Starte jetzt einen!</target>
-            </trans-unit>
-            <trans-unit id="conversations.select" resname="conversations.select">
-                <source>Select chat...</source>
-                <target>Chat auswählen...</target>
-            </trans-unit>
-            <trans-unit id="conversations.newConversation" resname="conversations.newConversation">
-                <source>New chat</source>
-                <target>Neuer Chat</target>
-            </trans-unit>
-            <trans-unit id="conversations.pin" resname="conversations.pin">
-                <source>Pin</source>
-                <target>Anheften</target>
-            </trans-unit>
-            <trans-unit id="conversations.unpin" resname="conversations.unpin">
-                <source>Unpin</source>
-                <target>Lösen</target>
-            </trans-unit>
-            <trans-unit id="conversations.archive" resname="conversations.archive">
-                <source>Archive</source>
-                <target>Archivieren</target>
-            </trans-unit>
-            <trans-unit id="conversations.archiveConfirm" resname="conversations.archiveConfirm">
-                <source>Archive this chat? You can find it later in the full chat module.</source>
-                <target>Diesen Chat archivieren? Du findest ihn später im Chat-Modul.</target>
-            </trans-unit>
-
-            <!-- Chat -->
-            <trans-unit id="chat.selectOrCreate" resname="chat.selectOrCreate">
-                <source>Select or start a chat</source>
-                <target>Chat auswählen oder neuen starten</target>
-            </trans-unit>
-            <trans-unit id="chat.start" resname="chat.start">
-                <source>Start chat</source>
-                <target>Chat starten</target>
-            </trans-unit>
-            <trans-unit id="chat.notAvailable" resname="chat.notAvailable">
-                <source>Chat not available. Please contact your administrator.</source>
-                <target>Chat nicht verfügbar. Bitte kontaktiere deinen Administrator.</target>
-            </trans-unit>
-            <trans-unit id="chat.processing" resname="chat.processing">
-                <source>Processing...</source>
-                <target>Wird verarbeitet...</target>
-            </trans-unit>
-            <trans-unit id="chat.retry" resname="chat.retry">
-                <source>Retry</source>
-                <target>Erneut versuchen</target>
-            </trans-unit>
-            <trans-unit id="chat.dismiss" resname="chat.dismiss">
-                <source>Dismiss</source>
-                <target>Schließen</target>
-            </trans-unit>
-            <trans-unit id="chat.send" resname="chat.send">
-                <source>Send</source>
-                <target>Senden</target>
-            </trans-unit>
-            <trans-unit id="chat.placeholder" resname="chat.placeholder">
-                <source>Ask anything...</source>
-                <target>Frag einfach...</target>
-            </trans-unit>
-            <trans-unit id="chat.connectionLost" resname="chat.connectionLost">
-                <source>Connection lost — reconnecting...</source>
-                <target>Verbindung unterbrochen — wird wiederhergestellt...</target>
-            </trans-unit>
-            <trans-unit id="chat.messageTooLong" resname="chat.messageTooLong">
-                <source>Message exceeds %d character limit</source>
-                <target>Nachricht überschreitet das Limit von %d Zeichen</target>
-            </trans-unit>
-
-            <!-- Tool messages -->
-            <trans-unit id="tool.output" resname="tool.output">
-                <source>Tool result (click to expand)</source>
-                <target>Tool-Ergebnis (klicken zum Aufklappen)</target>
-            </trans-unit>
-
-            <!-- Attachments -->
-            <trans-unit id="attachment.upload" resname="attachment.upload">
-                <source>Upload file</source>
-                <target>Datei hochladen</target>
-            </trans-unit>
-            <trans-unit id="attachment.fromFal" resname="attachment.fromFal">
-                <source>From file list</source>
-                <target>Aus Dateiliste</target>
-            </trans-unit>
-            <trans-unit id="attachment.notSupported" resname="attachment.notSupported">
-                <source>Your LLM model does not support file attachments</source>
-                <target>Ihr LLM-Modell unterstützt keine Dateianhänge</target>
-            </trans-unit>
-            <trans-unit id="attachment.tooLarge" resname="attachment.tooLarge">
-                <source>File too large (max %d MB)</source>
-                <target>Datei zu groß (max. %d MB)</target>
-            </trans-unit>
-            <trans-unit id="attachment.limitReached" resname="attachment.limitReached">
-                <source>Maximum 5 files per conversation reached</source>
-                <target>Maximum 5 Dateien pro Chat erreicht</target>
-            </trans-unit>
-            <trans-unit id="attachment.invalidType" resname="attachment.invalidType">
-                <source>File type not supported</source>
-                <target>Dateityp nicht unterstützt</target>
-            </trans-unit>
-            <trans-unit id="attachment.file" resname="attachment.file">
-                <source>File</source>
-                <target>Datei</target>
-            </trans-unit>
-            <trans-unit id="attachment.remove" resname="attachment.remove">
-                <source>Remove attachment</source>
-                <target>Anhang entfernen</target>
-            </trans-unit>
-            <trans-unit id="attachment.uploading" resname="attachment.uploading">
-                <source>Uploading...</source>
-                <target>Wird hochgeladen...</target>
-            </trans-unit>
-            <trans-unit id="attachment.fileMissing" resname="attachment.fileMissing">
-                <source>File no longer available</source>
-                <target>Datei nicht mehr verfügbar</target>
-            </trans-unit>
-            <trans-unit id="attachment.defaultMessage" resname="attachment.defaultMessage">
-                <source>Please analyze the attached file "%s".</source>
-                <target>Bitte analysiere die angehängte Datei "%s".</target>
-            </trans-unit>
-        </body>
-    </file>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en" trgLang="de">
+  <file id="f1">
+    <unit id="panel.title">
+      <segment>
+        <source>AI Chat</source>
+        <target state="final">KI-Chat</target>
+      </segment>
+    </unit>
+    <unit id="panel.collapse">
+      <segment>
+        <source>Minimize</source>
+        <target state="final">Minimieren</target>
+      </segment>
+    </unit>
+    <unit id="panel.maximize">
+      <segment>
+        <source>Maximize</source>
+        <target state="final">Maximieren</target>
+      </segment>
+    </unit>
+    <unit id="panel.restore">
+      <segment>
+        <source>Restore</source>
+        <target state="final">Wiederherstellen</target>
+      </segment>
+    </unit>
+    <unit id="panel.close">
+      <segment>
+        <source>Close</source>
+        <target state="final">Schließen</target>
+      </segment>
+    </unit>
+    <unit id="panel.windowActions">
+      <segment>
+        <source>Window actions</source>
+        <target state="final">Fensteraktionen</target>
+      </segment>
+    </unit>
+    <unit id="panel.resize">
+      <segment>
+        <source>Resize panel</source>
+        <target state="final">Fenstergröße ändern</target>
+      </segment>
+    </unit>
+    <unit id="sidebar.show">
+      <segment>
+        <source>Show sidebar</source>
+        <target state="final">Seitenleiste einblenden</target>
+      </segment>
+    </unit>
+    <unit id="sidebar.hide">
+      <segment>
+        <source>Hide sidebar</source>
+        <target state="final">Seitenleiste ausblenden</target>
+      </segment>
+    </unit>
+    <unit id="conversations.title">
+      <segment>
+        <source>Chats</source>
+        <target state="final">Chats</target>
+      </segment>
+    </unit>
+    <unit id="conversations.new">
+      <segment>
+        <source>New chat</source>
+        <target state="final">Neuer Chat</target>
+      </segment>
+    </unit>
+    <unit id="conversations.empty">
+      <segment>
+        <source>No chats yet. Start a new one!</source>
+        <target state="final">Noch keine Chats. Starte jetzt einen!</target>
+      </segment>
+    </unit>
+    <unit id="conversations.select">
+      <segment>
+        <source>Select chat...</source>
+        <target state="final">Chat auswählen...</target>
+      </segment>
+    </unit>
+    <unit id="conversations.newConversation">
+      <segment>
+        <source>New chat</source>
+        <target state="final">Neuer Chat</target>
+      </segment>
+    </unit>
+    <unit id="conversations.pin">
+      <segment>
+        <source>Pin</source>
+        <target state="final">Anheften</target>
+      </segment>
+    </unit>
+    <unit id="conversations.unpin">
+      <segment>
+        <source>Unpin</source>
+        <target state="final">Lösen</target>
+      </segment>
+    </unit>
+    <unit id="conversations.archive">
+      <segment>
+        <source>Archive</source>
+        <target state="final">Archivieren</target>
+      </segment>
+    </unit>
+    <unit id="conversations.archiveConfirm">
+      <segment>
+        <source>Archive this chat? You can find it later in the full chat module.</source>
+        <target state="final">Diesen Chat archivieren? Du findest ihn später im Chat-Modul.</target>
+      </segment>
+    </unit>
+    <unit id="chat.selectOrCreate">
+      <segment>
+        <source>Select or start a chat</source>
+        <target state="final">Chat auswählen oder neuen starten</target>
+      </segment>
+    </unit>
+    <unit id="chat.start">
+      <segment>
+        <source>Start chat</source>
+        <target state="final">Chat starten</target>
+      </segment>
+    </unit>
+    <unit id="chat.notAvailable">
+      <segment>
+        <source>Chat not available. Please contact your administrator.</source>
+        <target state="final">Chat nicht verfügbar. Bitte kontaktiere deinen Administrator.</target>
+      </segment>
+    </unit>
+    <unit id="chat.processing">
+      <segment>
+        <source>Processing...</source>
+        <target state="final">Wird verarbeitet...</target>
+      </segment>
+    </unit>
+    <unit id="chat.retry">
+      <segment>
+        <source>Retry</source>
+        <target state="final">Erneut versuchen</target>
+      </segment>
+    </unit>
+    <unit id="chat.dismiss">
+      <segment>
+        <source>Dismiss</source>
+        <target state="final">Schließen</target>
+      </segment>
+    </unit>
+    <unit id="chat.send">
+      <segment>
+        <source>Send</source>
+        <target state="final">Senden</target>
+      </segment>
+    </unit>
+    <unit id="chat.placeholder">
+      <segment>
+        <source>Ask anything...</source>
+        <target state="final">Frag einfach...</target>
+      </segment>
+    </unit>
+    <unit id="chat.connectionLost">
+      <segment>
+        <source>Connection lost — reconnecting...</source>
+        <target state="final">Verbindung unterbrochen — wird wiederhergestellt...</target>
+      </segment>
+    </unit>
+    <unit id="chat.messageTooLong">
+      <segment>
+        <source>Message exceeds %d character limit</source>
+        <target state="final">Nachricht überschreitet das Limit von %d Zeichen</target>
+      </segment>
+    </unit>
+    <unit id="tool.output">
+      <segment>
+        <source>Tool result (click to expand)</source>
+        <target state="final">Tool-Ergebnis (klicken zum Aufklappen)</target>
+      </segment>
+    </unit>
+    <unit id="attachment.attach">
+      <segment>
+        <source>Attach file</source>
+        <target state="final">Datei anhängen</target>
+      </segment>
+    </unit>
+    <unit id="attachment.upload">
+      <segment>
+        <source>Upload file</source>
+        <target state="final">Datei hochladen</target>
+      </segment>
+    </unit>
+    <unit id="attachment.fromFal">
+      <segment>
+        <source>From file list</source>
+        <target state="final">Aus Dateiliste</target>
+      </segment>
+    </unit>
+    <unit id="attachment.notSupported">
+      <segment>
+        <source>Your LLM model does not support file attachments</source>
+        <target state="final">Ihr LLM-Modell unterstützt keine Dateianhänge</target>
+      </segment>
+    </unit>
+    <unit id="attachment.tooLarge">
+      <segment>
+        <source>File too large (max %d MB)</source>
+        <target state="final">Datei zu groß (max. %d MB)</target>
+      </segment>
+    </unit>
+    <unit id="attachment.limitReached">
+      <segment>
+        <source>Maximum 5 files per conversation reached</source>
+        <target state="final">Maximum 5 Dateien pro Chat erreicht</target>
+      </segment>
+    </unit>
+    <unit id="attachment.invalidType">
+      <segment>
+        <source>File type not supported</source>
+        <target state="final">Dateityp nicht unterstützt</target>
+      </segment>
+    </unit>
+    <unit id="attachment.file">
+      <segment>
+        <source>File</source>
+        <target state="final">Datei</target>
+      </segment>
+    </unit>
+    <unit id="attachment.remove">
+      <segment>
+        <source>Remove attachment</source>
+        <target state="final">Anhang entfernen</target>
+      </segment>
+    </unit>
+    <unit id="attachment.uploading">
+      <segment>
+        <source>Uploading...</source>
+        <target state="final">Wird hochgeladen...</target>
+      </segment>
+    </unit>
+    <unit id="attachment.fileMissing">
+      <segment>
+        <source>File no longer available</source>
+        <target state="final">Datei nicht mehr verfügbar</target>
+      </segment>
+    </unit>
+    <unit id="attachment.defaultMessage">
+      <segment>
+        <source>Please analyze the attached file "%s".</source>
+        <target state="final">Bitte analysiere die angehängte Datei "%s".</target>
+      </segment>
+    </unit>
+    <unit id="fal_picker_unavailable">
+      <segment>
+        <source>FAL picker is not available</source>
+        <target state="final">FAL-Auswahl ist nicht verfügbar</target>
+      </segment>
+    </unit>
+    <unit id="fal_picker_popup_blocked">
+      <segment>
+        <source>Popup was blocked. Please disable your popup blocker.</source>
+        <target state="final">Popup wurde blockiert. Bitte deaktivieren Sie den Popup-Blocker.</target>
+      </segment>
+    </unit>
+  </file>
 </xliff>

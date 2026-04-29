@@ -1,149 +1,220 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-    <file source-language="en" datatype="plaintext" original="messages" date="2025-01-01T00:00:00Z" product-name="nr_mcp_agent">
-        <body>
-            <!-- Panel header -->
-            <trans-unit id="panel.title" resname="panel.title">
-                <source>AI Chat</source>
-            </trans-unit>
-            <trans-unit id="panel.collapse" resname="panel.collapse">
-                <source>Minimize</source>
-            </trans-unit>
-            <trans-unit id="panel.maximize" resname="panel.maximize">
-                <source>Maximize</source>
-            </trans-unit>
-            <trans-unit id="panel.restore" resname="panel.restore">
-                <source>Restore</source>
-            </trans-unit>
-            <trans-unit id="panel.close" resname="panel.close">
-                <source>Close</source>
-            </trans-unit>
-            <trans-unit id="panel.windowActions" resname="panel.windowActions">
-                <source>Window actions</source>
-            </trans-unit>
-            <trans-unit id="panel.resize" resname="panel.resize">
-                <source>Resize panel</source>
-            </trans-unit>
-
-            <!-- Sidebar -->
-            <trans-unit id="sidebar.show" resname="sidebar.show">
-                <source>Show sidebar</source>
-            </trans-unit>
-            <trans-unit id="sidebar.hide" resname="sidebar.hide">
-                <source>Hide sidebar</source>
-            </trans-unit>
-
-            <!-- Conversations -->
-            <trans-unit id="conversations.title" resname="conversations.title">
-                <source>Chats</source>
-            </trans-unit>
-            <trans-unit id="conversations.new" resname="conversations.new">
-                <source>New chat</source>
-            </trans-unit>
-            <trans-unit id="conversations.empty" resname="conversations.empty">
-                <source>No chats yet. Start a new one!</source>
-            </trans-unit>
-            <trans-unit id="conversations.select" resname="conversations.select">
-                <source>Select chat...</source>
-            </trans-unit>
-            <trans-unit id="conversations.newConversation" resname="conversations.newConversation">
-                <source>New chat</source>
-            </trans-unit>
-            <trans-unit id="conversations.pin" resname="conversations.pin">
-                <source>Pin</source>
-            </trans-unit>
-            <trans-unit id="conversations.unpin" resname="conversations.unpin">
-                <source>Unpin</source>
-            </trans-unit>
-            <trans-unit id="conversations.archive" resname="conversations.archive">
-                <source>Archive</source>
-            </trans-unit>
-            <trans-unit id="conversations.archiveConfirm" resname="conversations.archiveConfirm">
-                <source>Archive this chat? You can find it later in the full chat module.</source>
-            </trans-unit>
-
-            <!-- Chat -->
-            <trans-unit id="chat.selectOrCreate" resname="chat.selectOrCreate">
-                <source>Select or start a chat</source>
-            </trans-unit>
-            <trans-unit id="chat.start" resname="chat.start">
-                <source>Start chat</source>
-            </trans-unit>
-            <trans-unit id="chat.notAvailable" resname="chat.notAvailable">
-                <source>Chat not available. Please contact your administrator.</source>
-            </trans-unit>
-            <trans-unit id="chat.processing" resname="chat.processing">
-                <source>Processing...</source>
-            </trans-unit>
-            <trans-unit id="chat.retry" resname="chat.retry">
-                <source>Retry</source>
-            </trans-unit>
-            <trans-unit id="chat.dismiss" resname="chat.dismiss">
-                <source>Dismiss</source>
-            </trans-unit>
-            <trans-unit id="chat.send" resname="chat.send">
-                <source>Send</source>
-            </trans-unit>
-            <trans-unit id="chat.placeholder" resname="chat.placeholder">
-                <source>Ask anything...</source>
-            </trans-unit>
-            <trans-unit id="chat.connectionLost" resname="chat.connectionLost">
-                <source>Connection lost — reconnecting...</source>
-            </trans-unit>
-            <trans-unit id="chat.messageTooLong" resname="chat.messageTooLong">
-                <source>Message exceeds %d character limit</source>
-            </trans-unit>
-
-            <!-- Tool messages -->
-            <trans-unit id="tool.output" resname="tool.output">
-                <source>Tool result (click to expand)</source>
-            </trans-unit>
-
-            <!-- Attachments -->
-            <trans-unit id="attachment.attach" resname="attachment.attach">
-                <source>Attach file</source>
-            </trans-unit>
-            <trans-unit id="attachment.upload" resname="attachment.upload">
-                <source>Upload file</source>
-            </trans-unit>
-            <trans-unit id="attachment.fromFal" resname="attachment.fromFal">
-                <source>From file list</source>
-            </trans-unit>
-            <trans-unit id="attachment.notSupported" resname="attachment.notSupported">
-                <source>Your LLM model does not support file attachments</source>
-            </trans-unit>
-            <trans-unit id="attachment.tooLarge" resname="attachment.tooLarge">
-                <source>File too large (max %d MB)</source>
-            </trans-unit>
-            <trans-unit id="attachment.limitReached" resname="attachment.limitReached">
-                <source>Maximum 5 files per conversation reached</source>
-            </trans-unit>
-            <trans-unit id="attachment.invalidType" resname="attachment.invalidType">
-                <source>File type not supported</source>
-            </trans-unit>
-            <trans-unit id="attachment.file" resname="attachment.file">
-                <source>File</source>
-            </trans-unit>
-            <trans-unit id="attachment.remove" resname="attachment.remove">
-                <source>Remove attachment</source>
-            </trans-unit>
-            <trans-unit id="attachment.uploading" resname="attachment.uploading">
-                <source>Uploading...</source>
-            </trans-unit>
-            <trans-unit id="attachment.fileMissing" resname="attachment.fileMissing">
-                <source>File no longer available</source>
-            </trans-unit>
-            <trans-unit id="attachment.defaultMessage" resname="attachment.defaultMessage">
-                <source>Please analyze the attached file "%s".</source>
-            </trans-unit>
-
-            <!-- FAL picker -->
-            <trans-unit id="fal_picker_unavailable" resname="fal_picker_unavailable">
-                <source>FAL picker is not available</source>
-            </trans-unit>
-            <trans-unit id="fal_picker_popup_blocked" resname="fal_picker_popup_blocked">
-                <source>Popup was blocked. Please disable your popup blocker.</source>
-            </trans-unit>
-        </body>
-    </file>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en">
+  <file id="f1">
+    <unit id="panel.title">
+      <segment>
+        <source>AI Chat</source>
+      </segment>
+    </unit>
+    <unit id="panel.collapse">
+      <segment>
+        <source>Minimize</source>
+      </segment>
+    </unit>
+    <unit id="panel.maximize">
+      <segment>
+        <source>Maximize</source>
+      </segment>
+    </unit>
+    <unit id="panel.restore">
+      <segment>
+        <source>Restore</source>
+      </segment>
+    </unit>
+    <unit id="panel.close">
+      <segment>
+        <source>Close</source>
+      </segment>
+    </unit>
+    <unit id="panel.windowActions">
+      <segment>
+        <source>Window actions</source>
+      </segment>
+    </unit>
+    <unit id="panel.resize">
+      <segment>
+        <source>Resize panel</source>
+      </segment>
+    </unit>
+    <unit id="sidebar.show">
+      <segment>
+        <source>Show sidebar</source>
+      </segment>
+    </unit>
+    <unit id="sidebar.hide">
+      <segment>
+        <source>Hide sidebar</source>
+      </segment>
+    </unit>
+    <unit id="conversations.title">
+      <segment>
+        <source>Chats</source>
+      </segment>
+    </unit>
+    <unit id="conversations.new">
+      <segment>
+        <source>New chat</source>
+      </segment>
+    </unit>
+    <unit id="conversations.empty">
+      <segment>
+        <source>No chats yet. Start a new one!</source>
+      </segment>
+    </unit>
+    <unit id="conversations.select">
+      <segment>
+        <source>Select chat...</source>
+      </segment>
+    </unit>
+    <unit id="conversations.newConversation">
+      <segment>
+        <source>New chat</source>
+      </segment>
+    </unit>
+    <unit id="conversations.pin">
+      <segment>
+        <source>Pin</source>
+      </segment>
+    </unit>
+    <unit id="conversations.unpin">
+      <segment>
+        <source>Unpin</source>
+      </segment>
+    </unit>
+    <unit id="conversations.archive">
+      <segment>
+        <source>Archive</source>
+      </segment>
+    </unit>
+    <unit id="conversations.archiveConfirm">
+      <segment>
+        <source>Archive this chat? You can find it later in the full chat module.</source>
+      </segment>
+    </unit>
+    <unit id="chat.selectOrCreate">
+      <segment>
+        <source>Select or start a chat</source>
+      </segment>
+    </unit>
+    <unit id="chat.start">
+      <segment>
+        <source>Start chat</source>
+      </segment>
+    </unit>
+    <unit id="chat.notAvailable">
+      <segment>
+        <source>Chat not available. Please contact your administrator.</source>
+      </segment>
+    </unit>
+    <unit id="chat.processing">
+      <segment>
+        <source>Processing...</source>
+      </segment>
+    </unit>
+    <unit id="chat.retry">
+      <segment>
+        <source>Retry</source>
+      </segment>
+    </unit>
+    <unit id="chat.dismiss">
+      <segment>
+        <source>Dismiss</source>
+      </segment>
+    </unit>
+    <unit id="chat.send">
+      <segment>
+        <source>Send</source>
+      </segment>
+    </unit>
+    <unit id="chat.placeholder">
+      <segment>
+        <source>Ask anything...</source>
+      </segment>
+    </unit>
+    <unit id="chat.connectionLost">
+      <segment>
+        <source>Connection lost — reconnecting...</source>
+      </segment>
+    </unit>
+    <unit id="chat.messageTooLong">
+      <segment>
+        <source>Message exceeds %d character limit</source>
+      </segment>
+    </unit>
+    <unit id="tool.output">
+      <segment>
+        <source>Tool result (click to expand)</source>
+      </segment>
+    </unit>
+    <unit id="attachment.attach">
+      <segment>
+        <source>Attach file</source>
+      </segment>
+    </unit>
+    <unit id="attachment.upload">
+      <segment>
+        <source>Upload file</source>
+      </segment>
+    </unit>
+    <unit id="attachment.fromFal">
+      <segment>
+        <source>From file list</source>
+      </segment>
+    </unit>
+    <unit id="attachment.notSupported">
+      <segment>
+        <source>Your LLM model does not support file attachments</source>
+      </segment>
+    </unit>
+    <unit id="attachment.tooLarge">
+      <segment>
+        <source>File too large (max %d MB)</source>
+      </segment>
+    </unit>
+    <unit id="attachment.limitReached">
+      <segment>
+        <source>Maximum 5 files per conversation reached</source>
+      </segment>
+    </unit>
+    <unit id="attachment.invalidType">
+      <segment>
+        <source>File type not supported</source>
+      </segment>
+    </unit>
+    <unit id="attachment.file">
+      <segment>
+        <source>File</source>
+      </segment>
+    </unit>
+    <unit id="attachment.remove">
+      <segment>
+        <source>Remove attachment</source>
+      </segment>
+    </unit>
+    <unit id="attachment.uploading">
+      <segment>
+        <source>Uploading...</source>
+      </segment>
+    </unit>
+    <unit id="attachment.fileMissing">
+      <segment>
+        <source>File no longer available</source>
+      </segment>
+    </unit>
+    <unit id="attachment.defaultMessage">
+      <segment>
+        <source>Please analyze the attached file "%s".</source>
+      </segment>
+    </unit>
+    <unit id="fal_picker_unavailable">
+      <segment>
+        <source>FAL picker is not available</source>
+      </segment>
+    </unit>
+    <unit id="fal_picker_popup_blocked">
+      <segment>
+        <source>Popup was blocked. Please disable your popup blocker.</source>
+      </segment>
+    </unit>
+  </file>
 </xliff>
