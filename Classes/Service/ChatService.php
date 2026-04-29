@@ -12,7 +12,7 @@ use Netresearch\NrLlm\Provider\Contract\DocumentCapableInterface;
 use Netresearch\NrLlm\Provider\Contract\ProviderInterface;
 use Netresearch\NrLlm\Provider\Contract\ToolCapableInterface;
 use Netresearch\NrLlm\Provider\Contract\VisionCapableInterface;
-use Netresearch\NrLlm\Provider\ProviderAdapterRegistry;
+use Netresearch\NrLlm\Provider\ProviderAdapterRegistryInterface;
 use Netresearch\NrMcpAgent\Configuration\ExtensionConfiguration;
 use Netresearch\NrMcpAgent\Document\DocumentExtractorRegistry;
 use Netresearch\NrMcpAgent\Domain\Model\Conversation;
@@ -41,7 +41,7 @@ final class ChatService implements ChatCapabilitiesInterface
         private readonly ExtensionConfiguration $config,
         private readonly McpToolProviderInterface $mcpToolProvider,
         private readonly LlmTaskRepository $llmTaskRepository,
-        private readonly ProviderAdapterRegistry $adapterRegistry,
+        private readonly ProviderAdapterRegistryInterface $adapterRegistry,
         private readonly ResourceFactory $resourceFactory,
         private readonly SiteFinder $siteFinder,
         private readonly DocumentExtractorRegistry $documentExtractorRegistry,
