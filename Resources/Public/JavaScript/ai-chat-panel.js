@@ -457,6 +457,7 @@ export class AiChatPanel extends LitElement {
             display: flex;
             flex-direction: column;
             gap: 6px;
+            --tool-output-expanded-max-height: clamp(220px, 68dvh, 640px);
         }
         /* Message row layout (avatar/time column + text column) */
         .message-row {
@@ -542,7 +543,9 @@ export class AiChatPanel extends LitElement {
             padding: 6px 9px;
         }
         .message.tool.expanded {
-            max-height: min(42vh, 360px);
+            align-self: stretch;
+            width: 100%;
+            max-height: var(--tool-output-expanded-max-height);
             overflow-y: auto;
         }
         .message.tool:not(.expanded)::after {

@@ -237,6 +237,7 @@ export class ChatApp extends LitElement {
             gap: var(--typo3-spacing);
             background: var(--typo3-surface-container-lowest);
             scrollbar-gutter: stable;
+            --tool-output-expanded-max-height: clamp(280px, 72dvh, 760px);
         }
         /* Message row layout (avatar/time column + text column) */
         .message-row {
@@ -325,7 +326,9 @@ export class ChatApp extends LitElement {
             position: relative;
         }
         .message.tool.expanded {
-            max-height: min(50vh, 520px);
+            align-self: stretch;
+            width: 100%;
+            max-height: var(--tool-output-expanded-max-height);
             overflow-y: auto;
         }
         .message.tool:not(.expanded)::after {
