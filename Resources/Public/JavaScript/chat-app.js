@@ -137,10 +137,16 @@ export class ChatApp extends LitElement {
             box-shadow: var(--nr-chat-focus-ring);
         }
         .conversation-item.active {
+            --nr-chat-active-item-color: var(--typo3-component-active-color, #fff);
             background: var(--typo3-component-active-bg);
-            color: var(--typo3-state-primary-color);
-            border-color: var(--typo3-state-primary-border-color);
-            box-shadow: inset 3px 0 0 var(--typo3-state-primary-border-color);
+            color: var(--nr-chat-active-item-color);
+            border-color: color-mix(in srgb, var(--nr-chat-active-item-color), transparent 55%);
+            box-shadow: inset 3px 0 0 color-mix(in srgb, var(--nr-chat-active-item-color), transparent 10%);
+        }
+        .conversation-item.active:hover,
+        .conversation-item.active:focus-visible {
+            background: var(--typo3-component-active-bg);
+            color: var(--nr-chat-active-item-color);
         }
         .conversation-item .title {
             display: inline-flex;
@@ -159,6 +165,11 @@ export class ChatApp extends LitElement {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+        .conversation-item.active .title,
+        .conversation-item.active .conversation-label,
+        .conversation-item.active .pinned-icon {
+            color: var(--nr-chat-active-item-color);
         }
         .pinned-icon {
             display: inline-flex;

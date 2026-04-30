@@ -262,7 +262,16 @@ export class AiChatPanel extends LitElement {
             outline-offset: -2px;
         }
         .sidebar-item.active {
+            --nr-chat-active-item-color: var(--typo3-component-active-color, #fff);
             background: var(--typo3-component-active-bg);
+            color: var(--nr-chat-active-item-color);
+            border-color: color-mix(in srgb, var(--nr-chat-active-item-color), transparent 55%);
+            box-shadow: inset 3px 0 0 color-mix(in srgb, var(--nr-chat-active-item-color), transparent 10%);
+        }
+        .sidebar-item.active:hover,
+        .sidebar-item.active:focus-visible {
+            background: var(--typo3-component-active-bg);
+            color: var(--nr-chat-active-item-color);
         }
         .sidebar-item .item-title {
             grid-column: 1 / -1;
@@ -278,6 +287,16 @@ export class AiChatPanel extends LitElement {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+        .sidebar-item.active .item-title,
+        .sidebar-item.active .item-label,
+        .sidebar-item.active .pinned-icon,
+        .sidebar-item.active .sidebar-item-actions .btn-icon {
+            color: var(--nr-chat-active-item-color);
+        }
+        .sidebar-item.active .sidebar-item-actions .btn-icon:hover {
+            background: color-mix(in srgb, var(--nr-chat-active-item-color), transparent 84%);
+            color: var(--nr-chat-active-item-color);
         }
         .sidebar-item > .status-badge {
             grid-column: 2;
