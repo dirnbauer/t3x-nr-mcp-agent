@@ -310,6 +310,8 @@ export class ChatApp extends LitElement {
         }
         .message.tool {
             align-self: flex-start;
+            box-sizing: border-box;
+            max-width: 100%;
             background: var(--typo3-surface-container-base);
             border: 1px solid var(--typo3-component-border-color);
             font-size: 12px;
@@ -317,11 +319,14 @@ export class ChatApp extends LitElement {
             opacity: 0.7;
             max-height: 100px;
             overflow: hidden;
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
             cursor: pointer;
             position: relative;
         }
         .message.tool.expanded {
-            max-height: none;
+            max-height: min(50vh, 520px);
+            overflow-y: auto;
         }
         .message.tool:not(.expanded)::after {
             content: '... click to expand';

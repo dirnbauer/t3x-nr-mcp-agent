@@ -526,6 +526,8 @@ export class AiChatPanel extends LitElement {
         }
         .message.tool {
             align-self: flex-start;
+            box-sizing: border-box;
+            max-width: 100%;
             background: var(--typo3-surface-container-base);
             font-size: 12px;
             font-family: var(--typo3-font-family-code, monospace);
@@ -533,12 +535,15 @@ export class AiChatPanel extends LitElement {
             border: 1px solid var(--typo3-component-border-color);
             max-height: 52px;
             overflow: hidden;
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
             cursor: pointer;
             position: relative;
             padding: 6px 9px;
         }
         .message.tool.expanded {
-            max-height: none;
+            max-height: min(42vh, 360px);
+            overflow-y: auto;
         }
         .message.tool:not(.expanded)::after {
             content: '...';
