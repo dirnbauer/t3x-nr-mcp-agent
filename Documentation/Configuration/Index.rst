@@ -190,18 +190,20 @@ User interface
 File attachments
 ================
 
-File attachments are always available — no special provider configuration
-required. Text is extracted server-side for document formats, so they
-work with any LLM provider.
+File attachments are available when the active provider supports the
+format natively or an enabled server-side extractor can process it.
+PDF extraction is disabled by default. In that state, PDFs are only
+available for providers that expose native document support.
 
-**Always supported (server-side text extraction):**
+**Server-side text extraction:**
 
-*   PDF: ``application/pdf`` — requires ``smalot/pdfparser`` (hard dependency)
+*   PDF: ``application/pdf`` -- requires ``smalot/pdfparser``
+    and ``enablePdfTextExtraction = 1``
 *   DOCX: ``application/vnd.openxmlformats-officedocument.wordprocessingml.document``
-    — requires ``phpoffice/phpword`` (hard dependency)
-*   TXT: ``text/plain`` — no dependencies
+    -- requires ``phpoffice/phpword`` (hard dependency)
+*   TXT: ``text/plain`` -- no dependencies
 *   XLSX: ``application/vnd.openxmlformats-officedocument.spreadsheetml.sheet``
-    — requires ``phpoffice/phpspreadsheet`` (optional; install via
+    -- requires ``phpoffice/phpspreadsheet`` (optional; install via
     ``composer require phpoffice/phpspreadsheet:^3.0``)
 
 **Additionally available for vision-capable providers** (Claude 3+, Gemini,
@@ -215,26 +217,83 @@ sent as binary instead of being extracted. The file picker automatically
 restricts to formats the active provider can process.
 
 **Storage:** Uploaded files are stored in TYPO3 FAL under
-``fileadmin/ai-chat/<be_user_uid>/``. They are read at LLM call time and
-sent as Base64-encoded multimodal content. Each file is stored in a
-user-specific subfolder; the API enforces that users can only attach their
-own files (cross-user access attempts return 404).
+``fileadmin/ai-chat/<be_user_uid>/`` using sanitized randomized file
+names. They are read at LLM call time and sent as Base64-encoded
+multimodal content or extracted text. Each file is stored in a
+user-specific subfolder; the API enforces that users can only attach
+their own files (cross-user access attempts return 404).
 
 **Limits:**
 
 *   Maximum 5 files per conversation.
-*   Maximum file size: 20 MB per file.
+*   Maximum file size: configured by ``maxUploadFileSize``
+    (20 MB by default).
 *   File count is enforced both in the frontend (before upload) and in the
     backend API.
 
-**Security:** The ``fileadmin/ai-chat/`` directory should be protected
-from direct HTTP access. Add the following to your web server configuration
-or deploy a ``.htaccess`` file to ``fileadmin/ai-chat/``:
+**Validation and hardening:**
+
+*   The backend validates the detected MIME type via ``finfo``; the
+    browser-provided ``Content-Type`` is not trusted.
+*   The original filename extension must match the detected MIME type.
+*   Uploaded files are stored with sanitized randomized names to avoid
+    reusing attacker-controlled filenames.
+*   PDF extraction uses an isolated temporary processing copy.
+*   When ``rejectActivePdfContent`` is enabled, PDF extraction rejects
+    common active-content markers such as JavaScript, launch actions,
+    embedded files, RichMedia, and XFA.
+*   Extracted text is wrapped as untrusted document data before it is sent
+    to the model.
+*   When ``enablePromptInjectionFilter`` is enabled, lines that look like
+    prompt-injection directives are removed from extracted document text.
+
+The ``fileadmin/ai-chat/`` directory should be protected from direct HTTP
+access. Add the following to your web server configuration or deploy a
+``.htaccess`` file to ``fileadmin/ai-chat/``:
 
 ..  code-block:: apache
 
     # fileadmin/ai-chat/.htaccess
     Require all denied
+
+..  confval:: enablePdfTextExtraction
+    :type: boolean
+    :default: false
+
+    Enables server-side PDF text extraction as a fallback for providers
+    without native document support. Keep this disabled when PDFs should
+    be sent only to providers that can process PDF input natively.
+
+..  confval:: maxUploadFileSize
+    :type: int
+    :default: 20971520
+
+    Maximum accepted upload size in bytes. The default is 20 MB. Values
+    less than or equal to ``0`` fall back to the default 20 MB limit.
+
+..  confval:: maxExtractedTextLength
+    :type: int
+    :default: 20000
+
+    Maximum number of characters kept from extracted document text before
+    it is sent to the LLM. Set to ``0`` to disable truncation.
+
+..  confval:: enablePromptInjectionFilter
+    :type: boolean
+    :default: true
+
+    Removes common prompt-injection-like instructions from extracted
+    document text before the text is wrapped and sent to the LLM. This
+    applies to extractor fallback content, not to files sent natively to
+    a document-capable provider.
+
+..  confval:: rejectActivePdfContent
+    :type: boolean
+    :default: true
+
+    Rejects PDFs that contain active-content markers during PDF
+    validation and extraction. The default blocks markers for JavaScript,
+    launch actions, embedded files, RichMedia, and XFA.
 
 Security
 ========

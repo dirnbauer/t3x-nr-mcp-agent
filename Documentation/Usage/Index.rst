@@ -108,10 +108,12 @@ file badge.
 
 **Supported file types:**
 
-The following document formats are always available. Text is extracted
-server-side before sending to the LLM:
+The following document formats can be attached. Server-side extraction is
+used when the provider cannot process the file natively and the extractor
+is enabled:
 
-*   PDF (``application/pdf``)
+*   PDF (``application/pdf``) -- native provider support, or
+    ``enablePdfTextExtraction = 1``
 *   DOCX (``application/vnd.openxmlformats-officedocument.wordprocessingml.document``)
 *   TXT (``text/plain``)
 *   XLSX (``application/vnd.openxmlformats-officedocument.spreadsheetml.sheet``) --
@@ -125,15 +127,23 @@ accept images:
 When the provider natively supports a document format (e.g. Claude
 natively handles PDFs), the file is sent as-is instead of being
 extracted. The file picker automatically restricts to the formats
-supported by the active provider.
+supported by the active provider and enabled extractors.
 
 **Limits:**
 
 *   Maximum 5 files per conversation.
-*   Maximum file size: 20 MB per file.
+*   Maximum file size: 20 MB per file by default, configurable via
+    ``maxUploadFileSize``.
 
 If a file is not accepted (wrong type, too large, or upload error), an
 error message is shown above the input.
+
+Uploaded files are validated server-side. The detected MIME type and
+filename extension must match, stored filenames are sanitized and
+randomized, and extracted document text is treated as untrusted data. If
+PDF extraction is enabled, PDFs with active-content markers are rejected
+by default. Extracted text is truncated and filtered for common
+prompt-injection directives before it is sent to the model.
 
 Floating chat panel
 ===================

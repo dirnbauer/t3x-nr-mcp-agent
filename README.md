@@ -52,9 +52,11 @@ The AI chat supports file uploads for use as conversation attachments. Supported
 | Images (JPEG, PNG, WebP) | various | Requires a vision-capable provider |
 | Native PDF/DOCX | various | Requires a DocumentCapable provider (e.g. Anthropic Claude) |
 
-When a provider natively supports a format (e.g. Claude natively handles PDFs), the file is sent as-is. Otherwise, text is extracted server-side only when the corresponding extraction fallback is enabled. Extracted text is wrapped as untrusted document data and filtered for common prompt-injection directives before it is sent to the LLM.
+When a provider natively supports a format (e.g. Claude natively handles PDFs), the file is sent as-is. Otherwise, text is extracted server-side only when the corresponding extraction fallback is enabled. PDF extraction is disabled by default (`enablePdfTextExtraction = 0`) so PDFs are sent only to providers that support native document input unless the fallback is explicitly enabled.
 
-Upload handling validates detected MIME type and filename extension server-side, enforces the configured upload size, stores files with randomized sanitized names, rejects active PDF content markers by default, and processes PDFs through an isolated temporary copy.
+Upload handling validates detected MIME type and filename extension server-side, enforces the configured upload size, stores files with randomized sanitized names, and processes PDF extraction through an isolated temporary copy. When the PDF extraction fallback is enabled, active-content markers such as JavaScript, launch actions, embedded files, RichMedia, and XFA are rejected by default (`rejectActivePdfContent = 1`).
+
+Extracted document text is treated as untrusted input. Before it reaches the LLM, it is wrapped in an explicit untrusted-data block, truncated to `maxExtractedTextLength`, and filtered for common prompt-injection directives when `enablePromptInjectionFilter = 1`.
 
 ### XLSX support (optional)
 

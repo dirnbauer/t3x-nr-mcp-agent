@@ -242,9 +242,10 @@ File attachment flow
         | POST /ai-chat/file-upload (multipart/form-data)
         v
     ChatApiController::fileUpload()
-        | validates MIME type + size (max 20 MB)
+        | validates size, detected MIME type, and matching extension
+        | validates extraction-backed files
         v
-    FAL storage: fileadmin/ai-chat/<be_user_uid>/
+    FAL storage: fileadmin/ai-chat/<be_user_uid>/<sanitized-random-name>
         | returns fileUid
         v
     Frontend stores {fileUid, name, mimeType} as pendingFile
@@ -269,7 +270,8 @@ File attachment flow
         |     if provider implements DocumentCapableInterface
         |       → sent as binary (base64-encoded document block)
         |     else
-        |       → DocumentExtractorRegistry::extract() → plain-text block
+        |       → DocumentExtractorRegistry::extract()
+        |       → prompt-injection filter + untrusted plain-text block
         v
     LLM Provider (multimodal chatCompletion call)
 
@@ -280,3 +282,30 @@ for image formats and, if the provider also implements
 (e.g. ``['pdf']``). The frontend receives this list via ``GET /ai-chat/status``
 and uses it to set the file picker's ``accept`` attribute dynamically —
 ensuring users can only select file types the current provider can process.
+
+PDF extraction fallback
+-----------------------
+
+PDF uploads follow the same capability decision as other documents, but
+the extractor fallback is intentionally disabled by default:
+
+*   With ``enablePdfTextExtraction = 0``, PDFs are offered only when the
+    active provider advertises native document support for PDFs.
+*   With ``enablePdfTextExtraction = 1``, the upload API also accepts PDFs
+    for server-side extraction.
+
+When the PDF extractor is used, validation checks the PDF header, rejects
+encrypted files, and rejects active-content markers by default via
+``rejectActivePdfContent``. Extraction is performed from a randomized copy
+inside a private temporary directory and the copy is deleted afterwards.
+
+Untrusted extracted text
+------------------------
+
+Extractor output is not appended as ordinary user text. The service wraps
+it in an explicit untrusted-data block instructing the model to treat the
+content as reference data only. Before wrapping, the output is normalized,
+optionally filtered with ``enablePromptInjectionFilter``, and truncated to
+``maxExtractedTextLength``. Removed prompt-injection directives and
+truncation are recorded in a security note inside the generated text
+block.
