@@ -19,9 +19,11 @@ test.each(componentFiles)('%s preserves readable expanded tool output', async (f
     expect(toolBlock).toContain('white-space: pre-wrap');
     expect(toolBlock).toContain('overflow-wrap: anywhere');
     expect(toolBlock).toContain('max-width: 100%');
+    expect(source).toContain('--tool-output-expanded-min-height: clamp(');
     expect(source).toContain('--tool-output-expanded-max-height: clamp(');
-    expect(expandedBlock).toContain('align-self: stretch');
-    expect(expandedBlock).toContain('width: 100%');
+    expect(expandedBlock).toContain('min-height: var(--tool-output-expanded-min-height)');
+    expect(expandedBlock).not.toContain('align-self: stretch');
+    expect(expandedBlock).not.toContain('width: 100%');
     expect(expandedBlock).toContain('overflow-y: auto');
     expect(expandedBlock).toContain('max-height: var(--tool-output-expanded-max-height)');
 });
